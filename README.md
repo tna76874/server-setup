@@ -3,7 +3,7 @@
 Prepare your config files and edit public keys and other variables:
 
 ```
-./install.sh
+./setup.sh
 nano vars.yml
 ```
 
