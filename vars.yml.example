@@ -1,0 +1,11 @@
+---
+users:
+  - { name: 'lmh', sshkeys: 'https://github.com/tna76874.keys' }
+
+letsencrypt_email: USER@MYMAIL.XYZ
+
+main_domain: MYDOMAIN.XYZ
+
+ncadmin: ncadmin
+
+ncadminpw: 

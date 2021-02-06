@@ -1,0 +1,52 @@
+---
+- name: Basic Setup
+  hosts: all
+  become: yes
+  tags:
+    - base
+  vars_files:
+    - vars.yml
+  roles:
+    - base
+
+- name: Secure the ssh server
+  hosts: all
+  become: yes
+  vars_files:
+    - vars.yml
+  tags: [ 'never', 'security' ]
+  roles:
+    - security
+
+- name: Install Docker
+  hosts: all
+  become: yes
+  vars_files:
+    - vars.yml
+  tags: [ 'never', 'docker' ]
+  roles:
+    - docker
+
+- name: Install nginx
+  hosts: all
+  become: yes
+  vars_files:
+    - vars.yml
+  tags: [ 'never', 'nginx' ]
+  roles:
+    - nginx
+    - certbot
+
+- name: Nextcloud
+  hosts: all
+  become: yes
+  vars_files:
+    - vars.yml
+  tags: [ 'never', 'nextcloud' ]
+  vars:
+    nginx_domain_name: "nc.{{ main_domain }}"
+  roles:
+    - nginx
+    - nginx-tls-add
+    - nextcloud
+

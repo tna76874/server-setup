@@ -1,0 +1,19 @@
+---
+- name: Add certbot apt repo
+  apt_repository:
+    repo: ppa:certbot/certbot
+    state: present
+
+- name: Install certbot
+  apt:
+    pkg:
+      - certbot
+      - python3-certbot-nginx
+    update_cache: true
+    state: present
+
+- name: Ensure Let's Encrypt uses API v2
+  lineinfile:
+    path: /etc/letsencrypt/cli.ini
+    regexp: '^server'
+    line: 'server = https://acme-v02.api.letsencrypt.org/directory'
