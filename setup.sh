@@ -8,12 +8,18 @@ DIR=$(dirname "$SCRIPT")
 # setting the location of the ansible playbook repository
 REPODIR="/root/server-setup"
 
+# exit script if not run by root
+if [ "$(id -u)" != "0" ]; then
+   echo "This script must be run as root" 1>&2
+   exit 1
+fi
+
 ### setting up some functions
 function generatePassword() {
     tr -dc 'a-zA-Z0-9' < /dev/urandom | head -c 64
 }
 
-confirm() {
+function confirm() {
     # call with a prompt string or use a default
     read -r -p "$@"" [y/N]: " response
     case "$response" in
@@ -26,9 +32,9 @@ confirm() {
     esac
 }
 
-prepare_setup() {
+function prepare_setup() {
     # delete the repository, if present. 
-    rm -rf ${REPODIR}
+    sudo rm -rf ${REPODIR}
 
     echo -e "... update system sources, install ansible and git and clone the playbook repository ... [this could take a few minutes now, depending on your internet connection]"
     sudo apt update > /dev/null 2>&1
@@ -46,7 +52,7 @@ prepare_setup() {
     git clone https://github.com/tna76874/server-setup.git ${REPODIR} > /dev/null 2>&1
 }
 
-run_playbook() {
+function run_playbook() {
     # run the playbook to set up the system
     cd ${REPODIR}
 
@@ -81,5 +87,5 @@ fi
 
 if $(confirm "Install docker?") ; then
     cd ${REPODIR}
-    sudo sudo ansible-playbook main.yml -t docker
+    sudo ansible-playbook main.yml -t docker
 fi
