@@ -78,11 +78,11 @@ function run_playbook() {
 
 ### Run functions
 if $(confirm "Prepare system?") ; then
-    sudo prepare_setup
+    prepare_setup
 fi
 
 if $(confirm "Set up system?") ; then
-    sudo run_playbook
+    run_playbook
 fi
 
 if $(confirm "Install docker?") ; then
