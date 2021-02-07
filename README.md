@@ -37,3 +37,11 @@ Secure the server (do not allow password ssh auth):
 sudo ansible-playbook main.yml -t security
 ```
 
+
+
+Quick setup
+
+```
+sh -c  "$(curl -sL https://raw.githubusercontent.com/tna76874/server-setup/main/install)"
+```
+
