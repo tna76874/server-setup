@@ -39,6 +39,7 @@
       - htop
       - vim
       - nano
+      - openssh-server
     state: present
 
 - name: Ensure 'sudo' group exists
