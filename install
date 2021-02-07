@@ -1,1 +1,1 @@
-wget -qO setup.sh https://raw.githubusercontent.com/tna76874/server-setup/master/setup.sh && chmod +x setup.sh && sudo bash setup.sh && rm setup.sh
+wget -qO setup.sh https://raw.githubusercontent.com/tna76874/server-setup/master/setup.sh && chmod +x setup.sh && sudo ./setup.sh && rm setup.sh
