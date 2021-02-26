@@ -56,23 +56,28 @@ function run_playbook() {
     # run the playbook to set up the system
     cd ${REPODIR}
 
-    cp vars.yml.example vars.yml
+    if [ ! -f main.yml ]; then
+        cp main.yml.example main.yml
+    fi
+    
+    if [ ! -f vars.yml ]; then
+        cp vars.yml.example vars.yml
+        NCADMIN=$(generatePassword)
+        read -e -p "Letsencrypt mailadress: " -i "mymail@adress.xyz" LETSENCRYPTMAIL
+        read -e -p "Domain: " -i "mydomain.xyz" INSTANCE_DOMAIN
 
-    NCADMIN=$(generatePassword)
+        sed -i \
+            -e "s#ncadminpw:.*#ncadminpw: ${NCADMIN}#g" \
+            -e "s#letsencrypt_email:.*#letsencrypt_email: ${LETSENCRYPTMAIL}#g" \
+            -e "s#main_domain:.*#main_domain: ${INSTANCE_DOMAIN}#g" \
+            "$(dirname "$0")/vars.yml"
+    fi
 
-    read -e -p "Letsencrypt mailadress: " -i "mymail@adress.xyz" LETSENCRYPTMAIL
-    read -e -p "Domain: " -i "mydomain.xyz" INSTANCE_DOMAIN
-    read -e -p "Hostname: " -i "mhstack" THISHOSTNAME
-
-    echo -e "[all]\n$THISHOSTNAME      ansible_connection=local" > inventory
-
-    sed -i \
-        -e "s#ncadminpw:.*#ncadminpw: ${NCADMIN}#g" \
-        -e "s#letsencrypt_email:.*#letsencrypt_email: ${LETSENCRYPTMAIL}#g" \
-        -e "s#main_domain:.*#main_domain: ${INSTANCE_DOMAIN}#g" \
-        "$(dirname "$0")/vars.yml"
-
-
+    if [ ! -f inventory ]; then
+        read -e -p "Hostname: " -i "mhstack" THISHOSTNAME
+        echo -e "[all]\n$THISHOSTNAME      ansible_connection=local" > inventory
+    fi
+    
     sudo ansible-playbook ${1-main.yml}
 }
 

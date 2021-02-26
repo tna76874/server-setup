@@ -1,4 +1,5 @@
-vars.yml
+vars*.yml
+main.yml
 *.retry
 tmp/
 !tmp/.gitkeep
