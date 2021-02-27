@@ -104,7 +104,7 @@
       #!/bin/sh
       printf "\n"
       printf "This system is managed with ansible, see following repository for details\n"
-      printf "https://github.com/tna76874/hdhweg-homeschooling-stack\n"
+      printf "https://github.com/tna76874/server-setup\n"
       printf "\n"
     mode: 0755
     dest: /etc/update-motd.d/11-help-text
