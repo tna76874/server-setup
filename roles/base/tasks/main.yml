@@ -40,6 +40,10 @@
       - vim
       - nano
       - openssh-server
+      - zip
+      - unzip
+      - screen
+      - ncdu
     state: present
 
 - name: Ensure 'sudo' group exists
