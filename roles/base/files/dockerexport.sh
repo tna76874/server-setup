@@ -41,10 +41,14 @@ get_export_data() {
     export EXPORT_FILE="$( realpath --relative-to=. "$DIR").tar"
 
     cd "$DIR"
-    export EXP_IMAGES=$( docker-compose images | tr -s ' ' | tail -n +3 | cut -d' ' -f 2-3 | tr ' ' ':' )
+    if isfile "$COMPOSE_FILE" ; then
+        export EXP_IMAGES=$( docker-compose -f $COMPOSE_FILE images | tr -s ' ' | tail -n +3 | cut -d' ' -f 2-3 | tr ' ' ':' )
 
-    echo -e "export\n\n$EXP_IMAGES\n"
-    echo -e "to\n\n$EXPORT_FILE\n\n"
+        echo -e "export\n\n$EXP_IMAGES\n"
+        echo -e "to\n\n$EXPORT_FILE\n\n"
+    else
+        echo -e "\n \n ==> $COMPOSE_FILE not found. <==\n\n" && usage && exit 1
+    fi  
 }
 
 export_docker_images() {
