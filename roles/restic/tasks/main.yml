@@ -58,6 +58,14 @@
     group: root
     mode: '0700'
 
+- name: Ensure backup script
+  copy:
+    src: "backup.sh"
+    dest: "/usr/local/bin"
+    owner: "root"
+    group: "root"
+    mode: 0755
+
 - name: Ensure repository is initalized
   shell: "restic snapshots > /dev/null || restic init"
   become: yes
