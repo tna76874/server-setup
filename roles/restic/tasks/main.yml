@@ -17,6 +17,12 @@
     state: latest
     install_recommends: yes
 
+- name: Ensure restic apt package absent
+  apt:
+    name:
+      - restic
+    state: absent
+
 - name: Ensure restic is present
   snap:
     name:
