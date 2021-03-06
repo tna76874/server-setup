@@ -17,3 +17,4 @@
     path: /etc/letsencrypt/cli.ini
     regexp: '^server'
     line: 'server = https://acme-v02.api.letsencrypt.org/directory'
+  ignore_errors: yes
