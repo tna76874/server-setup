@@ -61,6 +61,7 @@
       - sudo
     state: present
   with_items: '{{ users }}'
+  when: users is defined
 
 - name: Add SSH keys
   authorized_key:
@@ -68,6 +69,7 @@
     state: present
     key: '{{ item.sshkeys }}'
   with_items: '{{ users }}'
+  when: users is defined
 
 - name: Ensure sudo group is passwordless
   lineinfile:
@@ -77,6 +79,7 @@
     mode: 0440
     create: yes
     validate: '/usr/sbin/visudo -cf %s'
+  when: users is defined
 
 - name: Ensure sudoers uses sudoers.d
   lineinfile:
@@ -84,6 +87,7 @@
     line: '#includedir /etc/sudoers.d'
     state: present
     validate: '/usr/sbin/visudo -cf %s'
+  when: users is defined
 
 - name: Ensure clean motd
   file:
