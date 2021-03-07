@@ -1,7 +1,7 @@
-vars*.yml
-main.yml
+/vars*.yml
+/main.yml
 *.retry
 tmp/
 !tmp/.gitkeep
 vault_password
-inventory
+/inventory
