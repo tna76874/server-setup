@@ -141,6 +141,6 @@
 - name: Ensure timezone
   community.general.timezone:
     name: "{{ time_zone }}"
-  notify: restart crond
+  notify: restart cron
 
 - import_tasks: firewall.yml
