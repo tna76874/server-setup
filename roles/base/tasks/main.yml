@@ -134,4 +134,13 @@
   with_items:
     - "dockerexport.sh"
 
+- name: Register timezone
+  set_fact: time_zone="Europe/Berlin"
+  when: time_zone is undefined
+
+- name: Ensure timezone
+  community.general.timezone:
+    name: "{{ time_zone }}"
+  notify: restart crond
+
 - import_tasks: firewall.yml
