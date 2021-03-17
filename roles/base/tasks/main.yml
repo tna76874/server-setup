@@ -46,6 +46,10 @@
       - ncdu
     state: present
 
+- name: Update dist
+  apt:
+    upgrade: dist
+
 - name: Ensure 'sudo' group exists
   group:
     name: sudo
