@@ -24,6 +24,6 @@
   when: reboot_required_file.stat.exists
 
 - name: Waiting for the machine to come back
-  local_action: wait_for host={{ ansible_host }} state=started port=22 delay=30
+  local_action: wait_for host={{ ansible_host }} state=started port=22 delay=30 timeout=600
   become: no
   when: reboot_required_file.stat.exists
