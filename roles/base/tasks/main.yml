@@ -109,6 +109,7 @@
     name: motd-news
     enabled: no
     masked: yes
+  ignore_errors: yes
 
 - name: Ensure notice about configuration managment in motd
   copy:
@@ -120,6 +121,7 @@
       printf "\n"
     mode: 0755
     dest: /etc/update-motd.d/11-help-text
+  ignore_errors: yes
 
 - name: Ensure that LANG from ssh clients is not used
   lineinfile:
