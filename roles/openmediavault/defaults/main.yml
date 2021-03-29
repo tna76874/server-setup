@@ -1,0 +1,14 @@
+---
+# perform full update+upgrade
+config_update_packages: true
+# set global locale
+config_locale: de_DE.UTF-8
+# set timezone
+config_timezone: Europe/Berlin
+# list of services that should be restarted if the timezone is changed
+config_timezone_dependent_services: []
+# wait this many seconds before forcing connection retry after reboot
+config_reboot_max_wait_time: 300
+# use this to add any additional options to the config in raw form
+config_other_options: {}
+config_reboot_min_time: 5

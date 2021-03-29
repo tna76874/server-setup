@@ -1,0 +1,40 @@
+---
+- name: update all packages
+  apt:
+    update_cache: true
+    upgrade: dist
+  when: config_update_packages
+
+- name: Determine existing sudo users
+  shell: 'grep sudo /etc/group | cut -d: -f4 | tr , "\n"'
+  changed_when: false 
+  register: sudo_users
+
+- name: Ensure sudo users are in ssh group
+  user:
+    name: '{{ item }}'
+    groups: ssh
+    append: yes
+    state: present
+  with_items: '{{ sudo_users.stdout_lines }}'
+
+- name: Gather the package facts
+  ansible.builtin.package_facts:
+    manager: auto
+
+- name: sets the timezone
+  timezone:
+    name: "{{ config_timezone }}"
+  notify: restart timezone dependent services
+
+- name: Ensure openmediavault install script
+  get_url:
+    url: https://github.com/OpenMediaVault-Plugin-Developers/installScript/raw/master/install
+    dest: /tmp/install_omv
+    mode: '0775'
+  
+- name: Install openmediavault
+  ansible.builtin.shell: "/tmp/install_omv -r"
+  become: yes
+  when: "'openmediavault' not in ansible_facts.packages"
+  notify: reboot

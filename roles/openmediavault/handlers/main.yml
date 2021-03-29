@@ -1,0 +1,18 @@
+---
+- name: reboot
+  shell: "sleep 1 && shutdown -r now +1"
+  async: 1
+  poll: 0
+  notify:
+    - wait for reboot
+
+- name: wait for reboot
+  wait_for_connection:
+    delay: "{{ config_reboot_min_time }}"
+    timeout: "{{ config_reboot_max_wait_time }}"
+
+- name: restart timezone dependent services
+  service:
+    name: "{{ item }}"
+    state: restarted
+  with_items: "{{ config_timezone_dependent_services }}"

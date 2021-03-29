@@ -1,0 +1,53 @@
+---
+- name: update all packages
+  apt:
+    update_cache: true
+    upgrade: dist
+  when: raspi_config_update_packages
+
+- name: Gather the package facts
+  ansible.builtin.package_facts:
+    manager: auto
+
+- name: sets the timezone
+  timezone:
+    name: "{{ raspi_config_timezone }}"
+  notify: restart timezone dependent services
+
+- import_tasks: setup_replace_user.yml
+  when: raspi_config_replace_user['name'] != None
+
+- name: adding existing user "{{ ansible_user }}" to group sudo
+  user:
+    name: "{{ raspi_config_replace_user['name'] }}"
+    groups: ssh
+    append: yes
+  become: yes
+  when: raspi_config_replace_user['name'] != None
+
+- name: ensure filesystem is resized
+  expand_fs:
+  when: raspi_config_expanded_filesystem
+  register: expand_fs_output
+
+- name: filesystem expand non-action check
+  debug:
+    msg: "{{ expand_fs_output.stderr }}"
+  when: "raspi_config_expanded_filesystem and expand_fs_output.stderr.startswith('WARN')"
+  changed_when: "True"
+
+- name: ensure mem split
+  pi_boot_config:
+    config_vals: "gpu_mem={{ raspi_config_memory_split_gpu }}"
+  notify:
+    - apply raspi-config
+    - reboot
+
+- name: ensure correct CPU parameters for Pi2
+  ensure_pi2_oc:
+  args:
+    cpu_types: "{{ raspi_config_pi_cpu }}"
+  when: raspi_config_ensure_optimal_cpu_params
+  notify:
+    - apply raspi-config
+    - reboot
