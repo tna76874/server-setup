@@ -51,3 +51,12 @@
   notify:
     - apply raspi-config
     - reboot
+
+- name: Ensure empty vscode.list is present
+  copy:
+    content: ""
+    dest: /etc/apt/sources.list.d/vscode.list
+    force: yes
+    group: root
+    owner: root
+    mode: 0755
