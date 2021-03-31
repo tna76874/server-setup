@@ -41,7 +41,6 @@
     config_vals: "gpu_mem={{ raspi_config_memory_split_gpu }}"
   notify:
     - apply raspi-config
-    - reboot
 
 - name: ensure correct CPU parameters for Pi2
   ensure_pi2_oc:
@@ -50,7 +49,6 @@
   when: raspi_config_ensure_optimal_cpu_params
   notify:
     - apply raspi-config
-    - reboot
 
 - name: Ensure empty vscode.list is present
   copy:

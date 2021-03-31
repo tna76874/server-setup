@@ -5,7 +5,7 @@
     restic_repo: /restic/backup
 
 - name: Perform backup
-  shell: "restic backup {{ restic_backup }}"
+  shell: "/snap/bin/restic backup {{ restic_backup }}"
   become: yes
   environment:
     RESTIC_PASSWORD_FILE: "{{ resitc_password_file }}"

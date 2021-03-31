@@ -3,6 +3,7 @@
 export SCRIPT=$(readlink -f "$0")
 export DIR="$PWD"
 export COMPOSE_FILE="docker-compose.yml"
+export ASK_FOR=1
 
 # Define functions
 ## Confirm function
@@ -63,13 +64,14 @@ usage() {
     echo "Usage: $0 -[f|d|h]" >&2
     echo "
    -f [FILE],   Select docker-compose.yml file.
+   -n,          Do not ask if exporting docker images.
    -d,          Deploy as system script
    -h,          Print this help text
    "
     exit 1
 }
 
-while getopts ':f:d' opt
+while getopts ':f:dn' opt
 #putting : in the beginnnig suppresses the errors for invalid options
 do
 case "$opt" in
@@ -77,12 +79,18 @@ case "$opt" in
        ;;
    'd')deploysystem && exit 0 || exit 1;
        ;;
+   'n')ASK_FOR=0;
+       ;;
     *) usage;
        ;;
 esac
 done
 
 get_export_data
-if $(confirm "Export images?") ; then
+if [ $ASK_FOR -eq 0 ]; then
     export_docker_images
+else
+    if $(confirm "Export images?") ; then
+        export_docker_images
+    fi
 fi
