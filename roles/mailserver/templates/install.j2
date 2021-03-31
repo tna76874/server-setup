@@ -1,0 +1,172 @@
+#!/bin/bash
+SCRIPT=$(readlink -f "$0")
+DIR=$(dirname "$SCRIPT")
+DATA="$DIR/data"
+BUILDDIR="$DIR/docker-build"
+
+export EXPORT_FILE="$DIR/images.tar"
+export BACKUP_DIR="$DIR/backup"
+
+## Define some functions
+function generatePassword() {
+    tr -dc 'a-zA-Z0-9' < /dev/urandom | head -c 64
+}
+
+confirm() {
+    # call with a prompt string or use a default
+    read -r -p "$@"" [y/N]: " response
+    case "$response" in
+        [yY][eE][sS]|[yY])
+            return 0
+            ;;
+        *)
+            return 1
+            ;;
+    esac
+}
+
+isfile() {
+  if [[ -r "${1:-}" ]]; then
+      true
+      return
+  fi
+  false
+  return
+}
+
+
+#Download setup.sh and environments
+environment() {
+    if [ ! -f setup.sh ]; then
+        wget -O setup.sh https://raw.githubusercontent.com/docker-mailserver/docker-mailserver/master/setup.sh; chmod a+x ./setup.sh
+    fi
+    if [ ! -f mailserver.env ]; then
+        wget https://raw.githubusercontent.com/docker-mailserver/docker-mailserver/master/mailserver.env
+    fi
+    if [ ! -f docker-compose.yml ]; then
+        cp docker-compose.yml.example docker-compose.yml
+    fi
+    source .env
+
+    read -e -p "HOSTNAME: " -i "mail" HOSTNAME
+    read -e -p "DOMAINNAME: " -i "$DOMAINNAME" DOMAINNAME
+    read -e -p "CONTAINER_NAME: " -i "$HOSTNAME" CONTAINER_NAME
+
+    sed -i \
+        -e "s#HOSTNAME=.*#HOSTNAME=${HOSTNAME}#g" \
+        -e "s#DOMAINNAME=.*#DOMAINNAME=${DOMAINNAME}#g" \
+        -e "s#CONTAINER_NAME=.*#CONTAINER_NAME=${CONTAINER_NAME}#g" \
+        "$(dirname "$0")/.env"
+
+    sed -i 's/SSL_TYPE=.*/SSL_TYPE=letsencrypt/g' mailserver.env
+
+}
+
+#(Re)generate letsencrypt certificates
+certificates() {
+cd "$DIR"
+if [ ! -f .env ]; then
+        echo -e "No .env file found." 
+else
+    source .env
+    DOMAIN="${HOSTNAME}.${DOMAINNAME}"
+    if $(confirm "--Purge all keys in /etc/letsencrypt/[live|archive]/${DOMAIN}*?") ; then
+        sudo rm -rf /etc/letsencrypt/live/${DOMAIN}*
+        sudo rm -rf /etc/letsencrypt/archive/${DOMAIN}*
+    fi
+    sudo certbot certonly --standalone --expand -d "${DOMAIN}"
+fi
+}
+
+#Generate dnsconfig file
+getdnsconfig() {
+    source .env
+    DIR="${PWD}"
+    echo -e "Add this into your DNS-Server as an TXT entry.\n" > ./dnsconfig.log
+    echo -e "1. DKIM\n" >> ./dnsconfig.log
+    sudo cat ./config/opendkim/keys/"$DOMAINNAME"/mail.txt >> ./dnsconfig.log
+    echo -e "\n" >> ./dnsconfig.log
+    echo -e "2. SPF\n" >> ./dnsconfig.log
+    echo -e "$DOMAINNAME in TXT \"v=spf1 mx ~all\"\n" >> ./dnsconfig.log
+    echo -e "3. DMARC\n" >> ./dnsconfig.log
+    echo -e "_dmarc.$DOMAINNAME in TXT v=DMARC1; p=none" >> ./dnsconfig.log
+    cat ./dnsconfig.log
+}
+
+#Setup the mailserver and dkim config
+firstsetup() {
+    source .env
+    DIR="${PWD}"
+    if [ ! -f ./config/opendkim/keys/"$DOMAINNAME"/mail.txt ]; then
+        docker-compose up -d
+        USER="mail"
+        # change password afterwards via config file
+        INITIAL_PW=$(generatePassword)
+        ./setup.sh email add {{ default_user }}@$DOMAINNAME "$INITIAL_PW" || exit 1
+        ./setup.sh config dkim && getdnsconfig
+    fi
+}
+
+# make zip dir of whole mailfolder
+backup_all() {
+    mkdir -p "$BACKUP_DIR"
+
+    cd "$DIR"/..
+    ZIPPATH=$( realpath --relative-to=. "$DIR")
+    IGNORE=$( realpath --relative-to=. "$BACKUP_DIR")
+
+    TIMESTAMP=$(date +"%Y-%m-%d-%H-%M-%S")
+    sudo zip -r "$BACKUP_DIR"/backup-$TIMESTAMP.zip "$ZIPPATH" -x "$IGNORE"/**\*
+    sudo chown -R "$UID":"$UID" "$BACKUP_DIR"
+}
+
+# ###### Parsing arguments
+#Usage print
+usage() {
+    echo "Usage: $0 -[s|c|k|d|r|h]" >&2
+    echo "
+   -s,    Initialize setup.sh and environments
+   -c,    (Re)generate letsencrypt certificates
+   -k,    Setup the mailserver with default user and dkim config
+   -d,    Generate dkim config
+   -r,    Backup everything into zip archive
+   -h,    Print this help text
+   "
+    exit 1
+}
+
+while getopts ':sckdr' opt
+do
+case "$opt" in
+   's')environment;
+       ;;
+   'c')certificates;
+       ;;
+   'k')firstsetup;
+       ;;
+   'd')getdnsconfig;
+       ;;
+   'e')export_docker_images;
+       ;;
+   'i')import_docker_images;
+       ;;
+   'r')backup_all;
+       ;;
+    *) usage;
+       ;;
+esac
+done
+if [ $OPTIND -eq 1 ]; then
+    if $(confirm "Download setup.sh and environments?") ; then
+        environment
+    fi
+    if $(confirm "(Re)generate letsencrypt certificates?") ; then
+        certificates
+    fi
+    if $(confirm "Setup the mailserver and dkim config?") ; then
+        firstsetup
+    fi
+fi
+
+
+

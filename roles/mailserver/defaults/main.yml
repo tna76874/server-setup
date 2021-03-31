@@ -1,0 +1,5 @@
+---
+# default mailserver user
+default_user: webmaster
+# setting deploy directory
+project_root: /srv/mailserver
