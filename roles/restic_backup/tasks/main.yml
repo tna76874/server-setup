@@ -1,7 +1,0 @@
----
-- name: Perform backup
-  shell: "/snap/bin/restic backup {{ restic_backup }}"
-  become: yes
-  environment:
-    RESTIC_PASSWORD_FILE: "{{ resitc_password_file }}"
-    RESTIC_REPOSITORY: "{{ restic_repo }}"
