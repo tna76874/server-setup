@@ -13,6 +13,13 @@
     state: absent
     purge: yes
 
+- name: Ensure sendmail service is disabled
+  service:
+    name: sendmail
+    state: stopped
+    enabled: no
+  ignore_errors: yes 
+
 - name: Ensure absent sendmail service
   file:
     path: /etc/init.d/sendmail
