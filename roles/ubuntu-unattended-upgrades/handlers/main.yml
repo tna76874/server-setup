@@ -1,4 +1,8 @@
 ---
+- name: stop sendmail
+  shell: service sendmail stop
+  become: yes
+  ignore_errors: yes 
 
 - name: reload systemd
   become: yes
