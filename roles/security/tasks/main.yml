@@ -1,17 +1,19 @@
-# Secure the server
-
+---
 - name: Disallow ssh password authentication
   lineinfile:
-    dest=/etc/ssh/sshd_config
-    regexp="^PasswordAuthentication"
-    line="PasswordAuthentication no"
-    state=present
-  notify: Restart ssh
+    dest: "/etc/ssh/sshd_config"
+    regexp: "^PasswordAuthentication"
+    line: "PasswordAuthentication no"
+    state: present
+  notify: restart sshd
 
 - name: Disallow root SSH access with passwords
   lineinfile:
-    dest=/etc/ssh/sshd_config
-    regexp="^PermitRootLogin"
-    line="PermitRootLogin prohibit-password"
-    state=present
-  notify: Restart ssh
+    dest: "/etc/ssh/sshd_config"
+    regexp: "^PermitRootLogin"
+    line: "PermitRootLogin prohibit-password"
+    state: present
+  notify: restart sshd
+
+- import_tasks: firewall.yml
+  when: config_ufw_firewall
