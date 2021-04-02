@@ -44,6 +44,7 @@
       - unzip
       - screen
       - ncdu
+      - bmon
     state: present
 
 - name: Update dist
