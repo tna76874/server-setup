@@ -1,0 +1,3 @@
+---
+# configure ufw firewall
+config_ufw_firewall: true
