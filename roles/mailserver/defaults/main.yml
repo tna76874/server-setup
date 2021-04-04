@@ -5,3 +5,8 @@ default_user: postmaster
 project_root: /srv/mailserver
 # mailserver user
 mailserver_user: root
+# mailserver configs
+config_fail2ban: 1
+config_log_trigger: daily_cron
+config_postmaster: 
+config_message_limit: 102400000
