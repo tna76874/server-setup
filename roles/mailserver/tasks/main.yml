@@ -51,7 +51,7 @@
     mode: "{{ item.mode }}"
     force: "{{ item.force }}"
   loop:
-    - { file: "env.j2", destination: "{{ project_root }}/.env", owner: "{{ mailserver_user }}", mode: "0644", force: "no" }
+    - { file: "env.j2", destination: "{{ project_root }}/.env", owner: "{{ mailserver_user }}", mode: "0644", force: "yes" }
     - { file: "install.j2", destination: "{{ project_root }}/install.sh", owner: "{{ mailserver_user }}", mode: "0755", force: "yes" }
   become: yes
   notify:
