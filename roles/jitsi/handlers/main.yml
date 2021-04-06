@@ -3,6 +3,7 @@
   docker_compose:
     project_src: "{{ project_root }}"
     state: absent
+  when: compose_file.stat.exists
 
 - name: init templates
   copy:
