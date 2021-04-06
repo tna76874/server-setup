@@ -13,6 +13,7 @@
     group: "{{ item.owner }}"
     mode: "{{ item.mode }}"
     remote_src: yes
+  become: yes
   loop:
     - { file: "{{ project_root }}/env.example", destination: "{{ project_root }}/.env", owner: "{{ server_user }}", mode: "0755" }
     - { file: "{{ project_root }}/docker-compose.yml.example", destination: "{{ project_root }}/docker-compose.yml", owner: "{{ server_user }}", mode: "0755" }
