@@ -152,3 +152,4 @@
   args:
     chdir: "{{ project_root }}"
   become: yes
+  when: jitsi_password != None
