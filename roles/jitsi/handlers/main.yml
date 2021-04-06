@@ -50,11 +50,12 @@
     state: directory
   loop:
     - { path: "{{ project_root }}/data/web", owner: "{{ server_user }}" }
+    - { path: "{{ project_root }}/data/images", owner: "{{ server_user }}" }
     - { path: "{{ project_root }}/data/transcripts", owner: "{{ server_user }}" }
     - { path: "{{ project_root }}/data/prosody/config", owner: "{{ server_user }}" }
     - { path: "{{ project_root }}/data/prosody/prosody-plugins-custom", owner: "{{ server_user }}" }
-    - { path: "{{ project_root }}/data/jicofo", owner: "systemd-coredump" }
-    - { path: "{{ project_root }}/data/jvb", owner: "systemd-coredump" }
+    - { path: "{{ project_root }}/data/jicofo", owner: "{{ server_user }}" }
+    - { path: "{{ project_root }}/data/jvb", owner: "{{ server_user }}" }
 
 - name: ensure passwords
   lineinfile:
