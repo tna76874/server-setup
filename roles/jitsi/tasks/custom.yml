@@ -43,6 +43,7 @@
     - { regexp: '(.*)startVideoMuted:(.*)', line: 'startVideoMuted: {{ config_start_video_N }},', state: "present" }
     - { regexp: '(.*)startWithVideoMuted:(.*)', line: 'startWithVideoMuted: {{ config_start_muted_video }},', state: "present" }
     - { regexp: '(.*)requireDisplayName:(.*)', line: 'requireDisplayName: {{ config_require_name }},', state: "present" }
+    - { regexp: '(.*)defaultLanguage:(.*)', line: 'defaultLanguage: ''{{ config_default_language }}'',', state: "present" }
     #
     - { regexp: '(.*)config.startAudioOnly(.*)', line: 'config.startAudioOnly = {{ config_start_muted_audio }};', state: "present" }
     - { regexp: '(.*)config.startAudioMuted(.*)', line: 'config.startAudioMuted = {{ config_start_audio_N }};', state: "present" }
