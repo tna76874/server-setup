@@ -25,6 +25,17 @@
   loop:
     - { path: "{{ project_root }}", owner: "{{ server_user }}" }
 
+- name: Query releases from github
+  uri:                                                               
+    url: https://api.github.com/repos/jitsi/docker-jitsi-meet/releases/latest
+    return_content: true                                             
+  register: github_latest_release   
+
+- name: Registering release tag
+  set_fact:
+    jitsi_docker_release: "{{ github_latest_release['json']['tag_name'] }}"
+  when: jitsi_docker_release == None
+
 - name: Ensure source files from github
   get_url:
     url: "{{ item.file }}"
