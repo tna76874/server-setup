@@ -3,6 +3,7 @@
   docker_compose:
     project_src: "{{ project_root }}"
     state: absent
+  ignore_errors: yes
   when: compose_file.stat.exists
 
 - name: init templates
@@ -138,6 +139,7 @@
   docker_compose:
     project_src: "{{ project_root }}"
     state: absent
+  ignore_errors: yes
 
 - name: compose up
   docker_compose:
