@@ -27,6 +27,7 @@ config_start_muted_video: 'true'
 config_start_muted_audio: 'true'
 config_start_audio_N: 3
 config_start_video_N: 3
+config_require_name: 'true'
 # interface.js configs
 config_logo_url: 'images/watermark.svg'
 config_unnamed_user: 'Fellow Jitster'
