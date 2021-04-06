@@ -47,6 +47,7 @@
     - { regexp: '(.*)config.startAudioOnly(.*)', line: 'config.startAudioOnly = {{ config_start_muted_audio }};', state: "present" }
     - { regexp: '(.*)config.startAudioMuted(.*)', line: 'config.startAudioMuted = {{ config_start_audio_N }};', state: "present" }
     - { regexp: '(.*)config.startVideoMuted(.*)', line: 'config.startVideoMuted = {{ config_start_video_N }};', state: "present" }
+    - { regexp: '(.*)config.requireDisplayName(.*)', line: 'config.requireDisplayName = {{ config_require_name }};', state: "present" }
   notify:
     - compose down
     - compose up
