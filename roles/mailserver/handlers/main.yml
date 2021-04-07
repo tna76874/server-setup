@@ -1,4 +1,11 @@
 ---
+- name: ensure compose down
+  docker_compose:
+    project_src: "{{ project_root }}"
+    state: absent
+  ignore_errors: yes
+  when: compose_file.stat.exists
+
 - name: copy mailserver.env
   copy:
     src: "{{ project_root }}/mailserver.env.example"
