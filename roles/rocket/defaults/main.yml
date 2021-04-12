@@ -1,6 +1,8 @@
 ---
 # ensure docker-compose gets restarted on every run
 restart_compose: false
+# docker-compose project name
+docker_config_project: rocketchat
 # start docker by default
 start_compose: true
 # mongo startup command
