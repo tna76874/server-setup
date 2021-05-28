@@ -10,11 +10,11 @@ services:
     environment:
       - USER_UID={{ config_git_id }}
       - USER_GID={{ config_git_id }}
-      - DB_TYPE=mysql
-      - DB_HOST=db:3306
-      - DB_NAME=gitea
-      - DB_USER=gitea
-      - DB_PASSWD=${DB_PASSWD}
+      - GITEA__database__DB_TYPE=mysql
+      - GITEA__database__DB_HOST=db:3306
+      - GITEA__database__DB_NAME=gitea
+      - GITEA__database__DB_USER=gitea
+      - GITEA__database__DB_PASSWD=${DB_PASSWD}
       - SSH_DOMAIN=${SSH_DOMAIN}
     restart: always
     networks:
