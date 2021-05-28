@@ -6,7 +6,6 @@
   changed_when: not env_file.stat.exists
   notify:
     - ensure compose down
-    - init templates
 
 - name: Check compose file
   stat: 
@@ -15,7 +14,6 @@
   changed_when: not compose_file.stat.exists
   notify:
     - ensure compose down
-    - init templates
 
 - name: Ensure git user
   user:
@@ -44,7 +42,7 @@
 
 - name: Registering release tag
   set_fact:
-    gitea_docker_release: "{{ github_latest_release['json']['tag_name'] }}"
+    gitea_docker_release: "{{ github_latest_release['json']['tag_name'].replace('v','') }}"
   when: gitea_docker_release == None
 
 - name: Ensure nginx template
@@ -58,6 +56,22 @@
   become: yes
   notify:
     - reload nginx
+
+- name: init templates
+  template:
+    src: "{{ item.file }}"
+    dest: "{{ item.destination }}"
+    owner: "{{ item.owner }}"
+    group: "{{ item.owner }}"
+    mode: "{{ item.mode }}"
+  become: yes
+  loop:
+    - { file: "env.j2", destination: "{{ project_root }}/.env", owner: "root", mode: "0644" }
+    - { file: "docker-compose.j2", destination: "{{ project_root }}/docker-compose.yml", owner: "root", mode: "0644" }
+    - { file: "gitea.j2", destination: "/app/gitea/gitea", owner: "git", mode: "0755" }
+  notify:
+    - compose down
+    - compose up
 
 - name: Compose startup state
   assert: { that: true, quiet: true }
