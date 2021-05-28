@@ -50,3 +50,17 @@
     - nginx-tls-add
     - nextcloud
 
+- name: Deploy gitea server
+  collections:
+    - community.docker
+  hosts:
+    - all
+  become: yes
+  tags:
+    - gitea
+    - never
+  vars:
+    nginx_domain_name: "git.{{ main_domain }}"
+  roles:
+    - nginx-tls-add
+    - gitea

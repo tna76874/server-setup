@@ -6,6 +6,9 @@ letsencrypt_email: USER@MYMAIL.XYZ
 
 main_domain: MYDOMAIN.XYZ
 
+# nextcloud credentials
 ncadmin: ncadmin
-
 ncadminpw: 
+
+# setting database password for gitea
+config_db_pw:
