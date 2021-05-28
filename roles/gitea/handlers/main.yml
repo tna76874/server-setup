@@ -1,0 +1,60 @@
+---
+- name: ensure compose down
+  docker_compose:
+    project_src: "{{ project_root }}"
+    state: absent
+  ignore_errors: yes
+  when: compose_file.stat.exists
+
+- name: ensure ssh key
+  user:
+    name: git
+    generate_ssh_key: yes
+    ssh_key_bits: 4096
+    ssh_key_file: .ssh/id_rsa
+    state: present
+  notify:
+    - ensure app gitea folder
+    - init templates
+
+- name: ensure app gitea folder
+  file:
+    path: "{{ item.path }}"
+    owner: "{{ item.owner }}"
+    mode: "{{ item.mode }}"
+    state: directory
+  loop:
+    - { path: "/app/gitea", owner: "root", mode: "755" }
+
+- name: init templates
+  template:
+    src: "{{ item.file }}"
+    dest: "{{ item.destination }}"
+    owner: "{{ item.owner }}"
+    group: "{{ item.owner }}"
+    mode: "{{ item.mode }}"
+  become: yes
+  loop:
+    - { file: "env.j2", destination: "{{ project_root }}/.env", owner: "root", mode: "0644" }
+    - { file: "docker-compose.j2", destination: "{{ project_root }}/docker-compose.yml", owner: "root", mode: "0644" }
+    - { file: "gitea.j2", destination: "/app/gitea/gitea", owner: "git", mode: "0755" }
+  notify:
+    - compose down
+    - compose up
+
+- name: reload nginx
+  service:
+    name: nginx
+    state: reloaded
+
+- name: compose down
+  docker_compose:
+    project_src: "{{ project_root }}"
+    state: absent
+  ignore_errors: yes
+
+- name: compose up
+  docker_compose:
+    project_src: "{{ project_root }}"
+    state: present
+    pull: yes

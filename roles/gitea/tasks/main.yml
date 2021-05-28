@@ -1,0 +1,109 @@
+---
+- name: Check .env file
+  stat: 
+    path: "{{ project_root }}/.env"
+  register: env_file
+  changed_when: not env_file.stat.exists
+  notify:
+    - ensure compose down
+    - init templates
+
+- name: Check compose file
+  stat: 
+    path: "{{ project_root }}/docker-compose.yml"
+  register: compose_file
+  changed_when: not compose_file.stat.exists
+  notify:
+    - ensure compose down
+    - init templates
+
+- name: Ensure git user
+  user:
+    name: git
+    uid: "{{ config_git_id }}"
+    shell: /bin/bash
+    password: '!'
+    update_password: on_create
+    state: present
+  notify:
+    - ensure ssh key
+
+- name: Ensure directories
+  file:
+    path: "{{ item.path }}"
+    owner: "{{ item.owner }}"
+    state: directory
+  loop:
+    - { path: "{{ project_root }}", owner: "{{ server_user }}" }
+
+- name: Query releases from github
+  uri:                                                               
+    url: https://api.github.com/repos/go-gitea/gitea/releases/latest
+    return_content: true                                             
+  register: github_latest_release   
+
+- name: Registering release tag
+  set_fact:
+    gitea_docker_release: "{{ github_latest_release['json']['tag_name'] }}"
+  when: gitea_docker_release == None
+
+- name: Ensure nginx template
+  template:
+    src: "{{ item.file }}"
+    dest: "{{ item.destination }}"
+    owner: "{{ item.owner }}"
+    mode: "{{ item.mode }}"
+  loop:
+    - { file: "nginx.j2", destination: "/etc/nginx/{{ nginx_domain_name }}.d/gitea.conf", owner: "root", mode: "0644" }
+  become: yes
+  notify:
+    - reload nginx
+
+- name: Compose startup state
+  assert: { that: true, quiet: true }
+  changed_when: true
+  notify:
+    - compose up
+  when: start_compose|bool
+
+- name: Flush handlers
+  meta: flush_handlers
+
+- name: Register public key to variable
+  shell: cat /home/git/.ssh/id_rsa.pub
+  register: pubkey
+
+- name: Ensure authorized_keys exists
+  copy:
+    content: ""
+    dest: /var/lib/gitea/git/.ssh/authorized_keys
+    force: no
+    group: git
+    owner: git
+    mode: '644'
+  notify:
+    - compose down
+    - compose up
+
+- name: Ensure pubkey in authorized_keys
+  lineinfile:
+    path: /var/lib/gitea/git/.ssh/authorized_keys
+    regexp: '^no-port-forwarding,no-X11-forwarding,no-agent-forwarding,no-pty'
+    line: "no-port-forwarding,no-X11-forwarding,no-agent-forwarding,no-pty {{ pubkey.stdout }}"
+    owner: git
+    group: git
+    mode: '644'
+  notify:
+    - compose down
+    - compose up
+
+- name: Ensure gitea ssh autorized keys
+  file:
+    src: /var/lib/gitea/git/.ssh/authorized_keys
+    dest: "/home/git/.ssh/authorized_keys"
+    owner: git
+    group: git
+    state: link
+  notify:
+    - compose down
+    - compose up

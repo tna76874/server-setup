@@ -1,0 +1,23 @@
+---
+# gitea release. if left blank, the latest release will be used.
+gitea_docker_release: 1.14.2
+# running user
+server_user: root
+# project root
+project_root: /srv/gitea
+# public domain
+nginx_domain_name: 
+# compose restart state
+restart_compose: false
+# docker-compose project name
+docker_config_project: gitea
+# start docker by default
+start_compose: true
+# database_password
+config_db_pw: 
+# tcp port
+config_tcp: 9235
+# ssh port
+config_ssh: 2222
+# config git uid
+config_git_id: 1059
