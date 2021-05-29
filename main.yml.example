@@ -88,6 +88,7 @@
     - vars.yml
   vars:
     nginx_domain_name: "calibre.{{ main_domain }}"
+    docker_release:
   roles:
     - nginx-tls-add
     - calibre
