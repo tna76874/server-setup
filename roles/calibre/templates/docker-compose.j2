@@ -1,0 +1,14 @@
+---
+version: "2.1"
+services:
+  calibre-web:
+    image: linuxserver/calibre-web:{{ docker_release }}
+    container_name: ${COMPOSE_PROJECT_NAME}
+    restart: always
+    env_file:
+      - .env
+    volumes:
+      - ./data/config:/config
+      - ./data/books:/books
+    ports:
+      - 127.0.0.1:${HTTPPORT}:8083

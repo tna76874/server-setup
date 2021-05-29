@@ -1,0 +1,17 @@
+---
+# calibre release. if left blank, the latest release will be used.
+docker_release: 0.6.12-ls119
+# running user
+server_user: root
+# project root
+project_root: /srv/calibre
+# public domain
+nginx_domain_name: 
+# compose restart state
+restart_compose: false
+# docker-compose project name
+docker_config_project: calibre
+# start docker by default
+start_compose: true
+# tcp port
+config_tcp: 4563
