@@ -14,7 +14,9 @@
   become: yes
   vars_files:
     - vars.yml
-  tags: [ 'never', 'security' ]
+  tags:
+    - never
+    - security
   roles:
     - security
 
@@ -23,7 +25,9 @@
   become: yes
   vars_files:
     - vars.yml
-  tags: [ 'never', 'docker' ]
+  tags:
+    - never
+    - docker
   roles:
     - docker
 
@@ -32,7 +36,9 @@
   become: yes
   vars_files:
     - vars.yml
-  tags: [ 'never', 'nginx' ]
+  tags:
+    - never
+    - nginx
   roles:
     - nginx
     - certbot
@@ -42,7 +48,9 @@
   become: yes
   vars_files:
     - vars.yml
-  tags: [ 'never', 'nextcloud' ]
+  tags:
+    - never
+    - nextcloud
   vars:
     nginx_domain_name: "nc.{{ main_domain }}"
   roles:
@@ -59,8 +67,44 @@
   tags:
     - gitea
     - never
+  vars_files:
+    - vars.yml
   vars:
     nginx_domain_name: "git.{{ main_domain }}"
   roles:
     - nginx-tls-add
     - gitea
+
+- name: Deploy calibre server
+  collections:
+    - community.docker
+  hosts:
+    - all
+  become: yes
+  tags:
+    - never
+    - calibre
+  vars_files:
+    - vars.yml
+  vars:
+    nginx_domain_name: "calibre.{{ main_domain }}"
+  roles:
+    - nginx-tls-add
+    - calibre
+
+- name: Deploy mailserver
+  collections:
+    - community.docker
+  hosts:
+    - all
+  become: yes
+  tags:
+    - never
+    - mail
+  vars_files:
+    - vars.yml
+  vars:
+    main_domain_name: "{{ main_domain }}"
+    project_root: "/srv/mailserver"
+  roles:
+    - mailserver
