@@ -45,6 +45,7 @@
       - screen
       - ncdu
       - bmon
+      - snapd
     state: present
 
 - name: Update dist
