@@ -1,0 +1,73 @@
+---
+- name: Check .env file
+  stat: 
+    path: "{{ project_root }}/.env"
+  register: env_file
+  changed_when: not env_file.stat.exists
+  notify:
+    - ensure compose down
+
+- name: Check compose file
+  stat: 
+    path: "{{ project_root }}/docker-compose.yml"
+  register: compose_file
+  changed_when: not compose_file.stat.exists
+  notify:
+    - ensure compose down
+
+- name: Flush handlers
+  meta: flush_handlers
+
+- name: Get user info
+  getent:
+    database: passwd
+    key: "{{ server_user }}"
+
+- name: Ensure directories
+  file:
+    path: "{{ item.path }}"
+    owner: "{{ item.owner }}"
+    state: directory
+  loop:
+    - { path: "{{ project_root }}", owner: "{{ server_user }}" }
+    - { path: "{{ project_root }}/data/config", owner: "999" }
+
+- name: Registering user id
+  set_fact:
+    server_user_id: "{{ getent_passwd[server_user][1] }}"
+
+- name: Ensure nginx template
+  template:
+    src: "{{ item.file }}"
+    dest: "{{ item.destination }}"
+    owner: "{{ item.owner }}"
+    mode: "{{ item.mode }}"
+  loop:
+    - { file: "nginx.j2", destination: "/etc/nginx/{{ nginx_domain_name }}.d/cryptpad.conf", owner: "root", mode: "0644" }
+  become: yes
+  notify:
+    - reload nginx
+
+- name: init templates
+  template:
+    src: "{{ item.file }}"
+    dest: "{{ item.destination }}"
+    owner: "{{ item.owner }}"
+    group: "{{ item.owner }}"
+    mode: "{{ item.mode }}"
+    force: "{{ item.force }}"
+  become: yes
+  loop:
+    - { file: "env.j2", destination: "{{ project_root }}/.env", owner: "{{ server_user }}", mode: "0644", force: yes }
+    - { file: "docker-compose.j2", destination: "{{ project_root }}/docker-compose.yml", owner: "{{ server_user }}", mode: "0644", force: yes }
+    - { file: "config.j2", destination: "{{ project_root }}/data/config/config.js", owner: "{{ server_user }}", mode: "0644", force: no }
+  notify:
+    - compose down
+    - compose up
+
+- name: Compose startup state
+  assert: { that: true, quiet: true }
+  changed_when: true
+  notify:
+    - compose up
+  when: start_compose|bool

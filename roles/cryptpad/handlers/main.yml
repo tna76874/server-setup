@@ -1,0 +1,24 @@
+---
+- name: ensure compose down
+  docker_compose:
+    project_src: "{{ project_root }}"
+    state: absent
+  ignore_errors: yes
+  when: compose_file.stat.exists
+
+- name: reload nginx
+  service:
+    name: nginx
+    state: reloaded
+
+- name: compose down
+  docker_compose:
+    project_src: "{{ project_root }}"
+    state: absent
+  ignore_errors: yes
+
+- name: compose up
+  docker_compose:
+    project_src: "{{ project_root }}"
+    state: present
+    pull: yes

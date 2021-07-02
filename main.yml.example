@@ -93,6 +93,24 @@
     - nginx-tls-add
     - calibre
 
+- name: Deploy cryptpad server
+  collections:
+    - community.docker
+  hosts:
+    - all
+  become: yes
+  tags:
+    - never
+    - cryptpad
+  vars_files:
+    - vars.yml
+  vars:
+    nginx_domain_name: "cryptpad.{{ main_domain }}"
+    docker_release: latest
+  roles:
+    - nginx-tls-add
+    - cryptpad
+
 - name: Deploy mailserver
   collections:
     - community.docker
