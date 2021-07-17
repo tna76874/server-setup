@@ -1,4 +1,6 @@
 ---
+# Rocket.Chat version. Check tags under https://hub.docker.com/_/rocket-chat?tab=tags&page=1&ordering=last_updated
+config_rc_version: latest
 # ensure docker-compose gets restarted on every run
 restart_compose: false
 # docker-compose project name
