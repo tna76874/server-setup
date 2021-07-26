@@ -1,5 +1,5 @@
 ---
-# calibre release.
+# cryptpad release.
 docker_release: latest
 # running user
 server_user: root
