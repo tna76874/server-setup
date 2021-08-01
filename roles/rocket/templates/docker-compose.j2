@@ -13,7 +13,7 @@ services:
       - mongo
 
   rocketchat:
-    image: rocket.chat:{{ config_rc_version }}
+    image: rocketchat/rocket.chat:{{ config_rc_version }}
     restart: always
     environment:
       - ROOT_URL=https://${DOMAIN}
