@@ -120,10 +120,32 @@
   tags:
     - never
     - mail
+    - roundcube
   vars_files:
     - vars.yml
   vars:
     main_domain_name: "{{ main_domain }}"
     project_root: "/srv/mailserver"
   roles:
+    - mailserver
+
+- name: Deploy mailserver frontend (roundcube)
+  collections:
+    - community.docker
+  hosts:
+    - all
+  become: yes
+  tags:
+    - never
+    - roundcube
+  vars_files:
+    - vars.yml
+  vars:
+    main_domain_name: 
+    project_root: "/srv/roundcube"
+    upload_limit: 100M
+    compose_config_mail_host: "mail.{{ main_domain }}"
+    nginx_domain_name: "mail.{{ main_domain }}"
+  roles:
+    - nginx-tls-add
     - mailserver
