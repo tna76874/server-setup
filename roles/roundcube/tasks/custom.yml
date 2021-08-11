@@ -1,0 +1,96 @@
+---
+- name: read-only mounts
+  lineinfile:
+    path: "{{ project_root }}/docker-compose.yml"
+    state: "{{ item.state }}"
+    regexp: "{{ item.regexp }}"
+    line: "{{ item.line }}"
+  become: yes
+  loop:
+    - { regexp: '(.*)\$\{CONFIG\}/web:/config(.*)', line: '            - ${CONFIG}/web:/config:ro', state: "present" }
+  notify:
+    - compose down
+    - compose up
+
+- name: Ensure config.js configs
+  lineinfile:
+    path: "{{ project_root }}/data/web/config.js"
+    state: "{{ item.state }}"
+    regexp: "{{ item.regexp }}"
+    line: "{{ item.line }}"
+  become: yes
+  loop:
+    # Joining-a-meeting settings
+    - { regexp: '(.*)config.startAudioOnly(.*)', line: 'config.startAudioOnly = {{ config_start_muted_audio }};', state: "present" }
+    - { regexp: '(.*)config.startWithAudioMuted(.*)', line: 'config.startWithAudioMuted = {{ config_start_muted_audio }};', state: "present" }
+    - { regexp: '(.*)config.startAudioMuted(.*)', line: 'config.startAudioMuted = {{ config_start_audio_N }};', state: "present" }
+    - { regexp: '(.*)config.startVideoMuted(.*)', line: 'config.startVideoMuted = {{ config_start_video_N }};', state: "present" }
+    - { regexp: '(.*)config.startWithVideoMuted(.*)', line: 'config.startWithVideoMuted = {{ config_start_muted_video }};', state: "present" }
+    - { regexp: '(.*)config.requireDisplayName(.*)', line: 'config.requireDisplayName = {{ config_require_name }};', state: "present" }
+    # Resolution Settings
+    - { regexp: '(.*)config.lastNLimits(.*)', line: "config.lastNLimits = {{ config_lastN }};", state: "present" }
+    - { regexp: '(.*)config.maxFullResolutionParticipants(.*)', line: 'config.maxFullResolutionParticipants = ''{{ config_full_res_N }}'';', state: "present" }
+    - { regexp: '(.*)config.resolution(.*)', line: 'config.resolution = {{ config_res_h_max }};', state: "present" } 
+    - { regexp: '(.*)config.constraints.video.height(.*)', line: 'config.constraints.video.height = { ideal: {{ config_res_h_max }}, max: {{ config_res_h_max }}, min: {{ config_res_h_min }} };', state: "present" }
+    - { regexp: '(.*)config.constraints.video.width(.*)', line: 'config.constraints.video.width = { ideal: {{ config_res_w_max }}, max: {{ config_res_w_max }}, min: {{ config_res_w_min }} };', state: "present" }
+    # Performance
+    - { regexp: '(.*)config.enableLayerSuspension(.*)', line: 'config.enableLayerSuspension = ''{{ config_enable_layer_suspension }}'';', state: "present" }
+    # Miscellaneous
+    - { regexp: '(.*)config.defaultLanguage(.*)', line: 'config.defaultLanguage = ''{{ config_default_language }}'';', state: "present" }
+    - { regexp: '(.*)config.disableThirdPartyRequests(.*)', line: 'config.disableThirdPartyRequests = ''{{ config_disable_third_party_request }}'';', state: "present" }
+    - { regexp: '(.*)config.toolbarButtons(.*)', line: 'config.toolbarButtons = {{ config_toolbar_buttons|sort }};', state: "present" }
+  notify:
+    - compose down
+    - compose up
+
+- name: Ensure interface.js configs for logo
+  lineinfile:
+    path: "{{ project_root }}/data/web/interface_config.js"
+    state: "{{ item.state }}"
+    regexp: "{{ item.regexp }}"
+    line: "{{ item.line }}"
+  become: yes
+  loop:
+    - { regexp: '(.*)interfaceConfig.DEFAULT_LOGO_URL(.*)', line: 'interfaceConfig.DEFAULT_LOGO_URL = ''{{ config_logo_url }}'';', state: "present" }
+    - { regexp: '(.*)interfaceConfig.DEFAULT_WELCOME_PAGE_LOGO_URL(.*)', line: 'interfaceConfig.DEFAULT_WELCOME_PAGE_LOGO_URL = ''{{ config_logo_url }}'';', state: "present" }
+  when: config_logo_file == None
+  notify:
+    - compose down
+    - compose up
+
+- name: Ensure interface.js configs
+  lineinfile:
+    path: "{{ project_root }}/data/web/interface_config.js"
+    state: "{{ item.state }}"
+    regexp: "{{ item.regexp }}"
+    line: "{{ item.line }}"
+  become: yes
+  loop:
+    - { regexp: '(.*)interfaceConfig.DEFAULT_REMOTE_DISPLAY_NAME(.*)', line: 'interfaceConfig.DEFAULT_REMOTE_DISPLAY_NAME = ''{{ config_unnamed_user }}'';', state: "present" }
+    - { regexp: '(.*)interfaceConfig.APP_NAME(.*)', line: 'interfaceConfig.APP_NAME = ''{{ config_name }}'';', state: "present" }
+    - { regexp: '(.*)interfaceConfig.SUPPORT_URL(.*)', line: 'interfaceConfig.SUPPORT_URL = ''{{ config_support_url }}'';', state: "present" }
+    - { regexp: '(.*)interfaceConfig.JITSI_WATERMARK_LINK(.*)', line: 'interfaceConfig.JITSI_WATERMARK_LINK = ''{{ config_support_url }}'';', state: "present" }
+    # Insert lists
+    - { regexp: '(.*)interfaceConfig.OPTIMAL_BROWSERS(.*)', line: 'interfaceConfig.OPTIMAL_BROWSERS = {{ config_optimal_browsers|sort }};', state: "present" }
+    - { regexp: '(.*)interfaceConfig.UNSUPPORTED_BROWSERS(.*)', line: 'interfaceConfig.UNSUPPORTED_BROWSERS = {{ config_unsupported_browsers|sort }};', state: "present" }
+    - { regexp: '(.*)interfaceConfig.TOOLBAR_BUTTONS(.*)', line: 'interfaceConfig.TOOLBAR_BUTTONS = {{ config_toolbar_buttons|sort }};', state: "present" }
+  notify:
+    - compose down
+    - compose up
+
+- name: Ensure jvb logging configs
+  lineinfile:
+    path: "{{ project_root }}/data/jvb/logging.properties"
+    state: "{{ item.state }}"
+    regexp: "{{ item.regexp }}"
+    line: "{{ item.line }}"
+  become: yes
+  loop:
+    - { regexp: '.level=INFO', line: '', state: "absent" }
+    - { regexp: '^level=(.*)', line: '.level={{ config_jvb_logging }}', state: "present" }
+  notify:
+    - compose down
+    - compose up
+
+- import_tasks: logo.yml
+  when: config_logo_file != None

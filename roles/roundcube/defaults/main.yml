@@ -1,0 +1,34 @@
+---
+# release. if left blank, the latest release will be used.
+roundcube_docker_release: 
+# base image
+roundcube_base_image: "apache"
+# git repo release URL
+config_git_repo_url_tag: "https://api.github.com/repos/roundcube/roundcubemail/releases/latest"
+# ensure docker-compose gets restarted on every run
+restart_compose: false
+# docker-compose project name
+docker_config_project: roundcube
+# start docker by default
+start_compose: true
+# running user
+server_user: root
+# project root
+project_root: "/srv/{{ docker_config_project }}"
+# public domain of the server
+nginx_domain_name: 
+# Docker-compose configs
+compose_config_startup: always
+compose_config_mysql_pw: "{{ lookup('password', '/dev/null length=32 chars=ascii_letters,digits') }}"
+compose_config_tcp_port: "9817"
+compose_config_mail_host:
+compose_config_upload_limit: "{{ upload_limit|default('100M') }}"
+compose_config_encryption: "tls"
+compose_config_roundcube_env:
+  - { var: "ROUNDCUBEMAIL_DEFAULT_HOST", val: "{{ compose_config_encryption }}://{{ compose_config_mail_host }}" }
+  - { var: "ROUNDCUBEMAIL_SMTP_SERVER", val: "{{ compose_config_encryption }}://{{ compose_config_mail_host }}" }
+  - { var: "ROUNDCUBEMAIL_UPLOAD_MAX_FILESIZE", val: "{{ compose_config_upload_limit }}" }
+  - { var: "ROUNDCUBEMAIL_DB_TYPE", val: "mysql" }
+  - { var: "ROUNDCUBEMAIL_DB_HOST", val: "roundcubedb" }
+  - { var: "ROUNDCUBEMAIL_DB_PORT", val: "3306" }
+  - { var: "ROUNDCUBEMAIL_SKIN", val: "elastic" }

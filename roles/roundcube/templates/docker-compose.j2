@@ -1,0 +1,35 @@
+version: '2'
+
+services:
+  roundcubedb:
+    image: mysql:5.7
+    container_name: roundcubedb
+    restart: {{ compose_config_startup }}
+    volumes:
+      - ./config/mysql:/var/lib/mysql
+    expose:
+      - 5432
+      - 3306
+    env_file:
+      - ./.env
+    environment:
+      - MYSQL_DATABASE=roundcubemail
+
+  roundcubemail:
+    image: roundcube/roundcubemail:{{ roundcube_docker_release }}-{{ roundcube_base_image }}
+    container_name: roundcubemail
+    restart: {{ compose_config_startup }}
+    depends_on:
+      - roundcubedb
+    links:
+      - roundcubedb
+    volumes:
+      - ./config/www:/var/www/html
+    ports:
+      - 127.0.0.1:{{ compose_config_tcp_port }}:80
+    env_file:
+      - ./.env
+    environment:
+{% for envs in compose_config_roundcube_env %}
+      - {{ envs.var }}={{ envs.val }}
+{% endfor %}
