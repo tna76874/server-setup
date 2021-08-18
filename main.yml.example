@@ -4,10 +4,19 @@
   become: yes
   tags:
     - base
+  roles:
+    - base
+
+- name: Set up user
+  hosts: all
+  become: yes
+  tags:
+    - user
+    - base
   vars_files:
     - vars.yml
   roles:
-    - base
+    - user
 
 - name: Secure the ssh server
   hosts: all
