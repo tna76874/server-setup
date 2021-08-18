@@ -25,6 +25,15 @@
     update_cache: yes
     cache_valid_time: 3600
     upgrade: safe
+  register: result
+  failed_when: False
+  changed_when:
+    - '"dpkg --configure -a" in result.msg'
+  notify:
+    - reconfigure
+
+- name: Flush handlers
+  meta: flush_handlers
 
 - name: Ensure basic packages
   apt:
