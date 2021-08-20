@@ -1,7 +1,7 @@
 ---
 ncadmin: "ncadmin"
 
-config_nextcloud_limit: "{{ upload_limit|default('20GB') }}"
+config_nextcloud_limit: "{{ upload_limit|default('20G') }}"
 
 config_nextcloud_memory_limit: 512M
 
