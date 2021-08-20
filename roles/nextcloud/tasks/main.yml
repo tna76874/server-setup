@@ -21,9 +21,9 @@
   notify:
     - reload apache
 
-# - name: Ensure nextcloud nginx conf is present
-#   template:
-#     src: nextcloud.nginx
-#     dest: "/etc/nginx/{{ nginx_domain_name }}.d/nextloud.conf"
-#   notify: reload nginx
+- name: Ensure nextcloud nginx conf is present
+  template:
+    src: nextcloud.nginx
+    dest: "/etc/nginx/{{ nginx_domain_name }}.d/nextloud.conf"
+  notify: reload nginx
 
