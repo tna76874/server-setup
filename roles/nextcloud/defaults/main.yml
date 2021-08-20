@@ -1,0 +1,17 @@
+---
+config_nextcloud_limit: "{{ upload_limit|default('20GB') }}"
+
+config_nextcloud_memory_limit: 512M
+
+config_nextcloud_php_time: "7200"
+
+config_nextcloud_cmds:
+  - snap connect nextcloud:removable-media
+  - snap set nextcloud ports.http=81 ports.https=444
+  - nextcloud.occ config:system:set trusted_domains 0 --value="{{ nginx_domain_name }}"
+  - nextcloud.occ config:system:set overwriteprotocol --value="https"
+  - snap set nextcloud php.memory-limit={{ config_nextcloud_memory_limit }}
+  - snap set nextcloud php.upload-max-filesize={{ config_nextcloud_limit }}
+  - snap set nextcloud php.post-max-size={{ config_nextcloud_limit }}
+  - snap set nextcloud php.max-input-time={{ config_nextcloud_php_time }}
+  - snap set nextcloud php.max-execution-time={{ config_nextcloud_php_time }}

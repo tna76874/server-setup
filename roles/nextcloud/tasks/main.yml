@@ -1,27 +1,23 @@
 ---
 - name: Install nextcloud snap
   command: snap install nextcloud
+  become: yes
+  register: nc_install_return
+  failed_when: False
+  changed_when: '"is already installed" not in nc_install_return.stderr'
+  notify:
+    - init user
+    
+- name: Flush handlers
+  meta: flush_handlers
 
-- name: Enable removable media
+- name: Ensure nextcloud configs
   shell:
-    cmd: sudo snap connect nextcloud:removable-media
-
-- name: Change ports of nextcloud snap
-  shell:
-    cmd: sudo snap set nextcloud ports.http=81 ports.https=444
-
-- name: Set up inital user
-  shell:
-    cmd: sudo nextcloud.manual-install {{ ncadmin }} {{ ncadminpw }}
-  ignore_errors: yes
-
-- name: Set nextcloud trusted domains
-  shell:
-    cmd: sudo nextcloud.occ config:system:set trusted_domains 0 --value="{{ nginx_domain_name }}"
-
-- name: Set overwriteprotocol to https
-  shell:
-    cmd: sudo nextcloud.occ config:system:set overwriteprotocol --value="https"
+    cmd: "{{ item }}" 
+  become: yes
+  loop: "{{ config_nextcloud_cmds }}"
+  notify:
+    - reload apache
 
 - name: Ensure nextcloud nginx conf is present
   template:

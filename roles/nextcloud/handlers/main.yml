@@ -1,5 +1,16 @@
 ---
+- name: init user
+  shell:
+    cmd: nextcloud.manual-install {{ ncadmin }} {{ ncadminpw }}
+  become: yes
+  ignore_errors: yes
+
 - name: reload nginx
   service:
     name: nginx
+    state: reloaded
+
+- name: reload apache
+  service:
+    name: snap.nextcloud.apache
     state: reloaded
