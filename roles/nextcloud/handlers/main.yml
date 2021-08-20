@@ -1,9 +1,19 @@
 ---
+- name: init pw
+  set_fact:
+    nextcloud_init_pw: "{{ ncadminpw|default(lookup('password', '/dev/null length=32 chars=ascii_letters,digits')) }}"
+
 - name: init user
   shell:
-    cmd: nextcloud.manual-install {{ ncadmin }} {{ ncadminpw }}
+    cmd: nextcloud.manual-install {{ ncadmin }} {{ nextcloud_init_pw }}
   become: yes
   ignore_errors: yes
+
+- name: print password
+  debug:
+    msg: 
+      - "Admin User: {{ ncadmin }}"
+      - "Admin Password: {{ nextcloud_init_pw }}"
 
 - name: reload nginx
   service:

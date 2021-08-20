@@ -6,7 +6,9 @@
   failed_when: False
   changed_when: '"is already installed" not in nc_install_return.stderr'
   notify:
+    - init pw
     - init user
+    - print password
     
 - name: Flush handlers
   meta: flush_handlers
@@ -19,9 +21,9 @@
   notify:
     - reload apache
 
-- name: Ensure nextcloud nginx conf is present
-  template:
-    src: nextcloud.nginx
-    dest: "/etc/nginx/{{ nginx_domain_name }}.d/nextloud.conf"
-  notify: reload nginx
+# - name: Ensure nextcloud nginx conf is present
+#   template:
+#     src: nextcloud.nginx
+#     dest: "/etc/nginx/{{ nginx_domain_name }}.d/nextloud.conf"
+#   notify: reload nginx
 
