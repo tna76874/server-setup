@@ -1,0 +1,47 @@
+---
+- name: Check .env file
+  stat: 
+    path: "{{ project_root }}/.env"
+  register: env_file
+  changed_when: not env_file.stat.exists
+  notify:
+    - init env
+
+- name: Ensure directories
+  file:
+    path: "{{ item.path }}"
+    owner: "{{ item.owner }}"
+    state: directory
+  loop:
+    - { path: "{{ project_root }}", owner: "{{ server_user }}" }
+
+- name: init templates
+  template:
+    src: "{{ item.file }}"
+    dest: "{{ item.destination }}"
+    owner: "{{ item.owner }}"
+    group: "{{ item.owner }}"
+    mode: "{{ item.mode }}"
+  become: yes
+  loop:
+    - { file: "docker-compose.j2", destination: "{{ project_root }}/docker-compose.yml", owner: "{{ server_user }}", mode: "0755" }
+  notify:
+    - compose down
+    - compose up
+
+- name: Ensure docker image pull state
+  cron:
+    name: "pulling teamspeak docker image"
+    cron_file: "teamspeak_docker_pull"
+    minute: "0"
+    hour: "0"
+    job: "(cd {{ project_root }}; /usr/local/bin/docker-compose down; /usr/local/bin/docker-compose pull; /usr/local/bin/docker-compose up -d)&"
+    user: root
+    state: "{% if teamspeak_enabled|bool %}present{% else %}absent{% endif %}"
+
+- name: Compose startup state
+  assert: { that: true, quiet: true }
+  changed_when: true
+  notify:
+    - "{% if teamspeak_enabled|bool %}compose up{% else %}compose down{% endif %}"
+  when: start_compose|bool

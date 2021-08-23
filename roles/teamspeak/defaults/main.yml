@@ -1,0 +1,22 @@
+---
+# release
+teamspeak_docker_release: "latest"
+# ensure docker-compose gets restarted on every run
+restart_compose: false
+# docker-compose project name
+docker_config_project: teamspeak
+# start docker by default
+start_compose: true
+# enable teamspeak and regular pulls
+teamspeak_enabled: true
+# running user
+server_user: root
+# project root
+project_root: "/srv/{{ docker_config_project }}"
+# Docker-compose configs
+compose_config_startup: always
+compose_config_teamspeak_env:
+  - { var: "TS3SERVER_LICENSE", val: "accept" }
+  - { var: "TS3SERVER_QUERY_PROTOCOLS", val: "ssh" }
+compose_config_teamspeak_ports:
+  - { bind: "", host: "9987", container: "9987", protocol: "udp" }

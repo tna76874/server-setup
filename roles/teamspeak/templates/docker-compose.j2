@@ -1,0 +1,15 @@
+version: '3.1'
+services:
+  teamspeak:
+    image: teamspeak:{{ teamspeak_docker_release}}
+    restart: {{ compose_config_startup }}
+    ports:
+{% for ports in compose_config_teamspeak_ports %}
+      - {{ ports.bind }}{{ ports.host }}:{{ ports.container }}/{{ ports.protocol }}
+{% endfor %}
+    environment:
+{% for envs in compose_config_teamspeak_env %}
+      - {{ envs.var }}={{ envs.val }}
+{% endfor %}
+    volumes:
+      - ./ts3-data:/var/ts3server/
