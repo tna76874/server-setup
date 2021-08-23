@@ -7,6 +7,8 @@ config_nextcloud_memory_limit: 512M
 
 config_nextcloud_php_time: "7200"
 
+config_nextcloud_nginx_time: "12h"
+
 config_nextcloud_cmds:
   - snap connect nextcloud:removable-media
   - snap set nextcloud ports.http=81 ports.https=444

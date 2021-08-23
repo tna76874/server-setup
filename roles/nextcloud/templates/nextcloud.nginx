@@ -9,4 +9,9 @@ location / {
     proxy_set_header X-Forward-Proto http;
     proxy_set_header X-Nginx-Proxy true;
     proxy_redirect off;
+
+    send_timeout {{ config_nextcloud_nginx_time }};
+    proxy_read_timeout {{ config_nextcloud_nginx_time }};
+    proxy_send_timeout {{ config_nextcloud_nginx_time }};
+    proxy_connect_timeout {{ config_nextcloud_nginx_time }};
 }

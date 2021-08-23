@@ -24,6 +24,6 @@
 - name: Ensure nextcloud nginx conf is present
   template:
     src: nextcloud.nginx
-    dest: "/etc/nginx/{{ nginx_domain_name }}.d/nextloud.conf"
+    dest: "/etc/nginx/{{ nginx_domain_name }}.d/nextcloud.conf"
   notify: reload nginx
 
