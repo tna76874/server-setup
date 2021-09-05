@@ -55,6 +55,8 @@
       - ncdu
       - bmon
       - snapd
+      - htop
+      - powertop
     state: present
 
 - name: Update dist
