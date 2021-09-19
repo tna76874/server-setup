@@ -27,3 +27,7 @@
     dest: "/etc/nginx/{{ nginx_domain_name }}.d/nextcloud.conf"
   notify: reload nginx
 
+- name: Ensure nextcloud old nginx conf is absent
+  ansible.builtin.file:
+    path: "/etc/nginx/{{ nginx_domain_name }}.d/nextloud.conf"
+    state: absent
