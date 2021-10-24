@@ -1,0 +1,39 @@
+---
+# docker image tags
+tag_nextcloud: '22.2.0-fpm-alpine'
+tag_redis: '6.2.6'
+tag_mariadb: '10.5'
+tag_nginx: 'latest'
+
+# nginx fpm config
+config_nginx_fpm: "https://raw.githubusercontent.com/nextcloud/docker/master/.examples/docker-compose/with-nginx-proxy/mariadb/fpm/web/nginx.conf"
+
+# ensure docker-compose gets restarted on every run
+restart_compose: false
+# docker-compose project name
+docker_config_project: nextcloud
+# start docker by default
+start_compose: true
+# running user
+server_user: root
+# project root
+project_root: "/srv/{{ docker_config_project }}"
+# public domain of the server
+nginx_domain_name: 
+# Docker-compose configs
+compose_config_startup: always
+
+compose_config_mysql_pw: "{{ lookup('password', '/dev/null length=32 chars=ascii_letters,digits') }}"
+compose_config_mysql_root_pw: "{{ lookup('password', '/dev/null length=32 chars=ascii_letters,digits') }}"
+compose_config_nc_admin_pw: "{{ lookup('password', '/dev/null length=32 chars=ascii_letters,digits') }}"
+
+compose_config_tcp_port: "81"
+compose_config_env:
+  - { var: "MYSQL_HOST", val: "db" }
+  - { var: "REDIS_HOST", val: "redis" }
+  - { var: "NEXTCLOUD_TRUSTED_DOMAINS", val: "{{ nginx_domain_name }}" }
+  - { var: "OVERWRITEHOST", val: "{{ nginx_domain_name }}" }
+  - { var: "TRUSTED_PROXIES", val: "{{ hostvars[inventory_hostname]['ansible_default_ipv4']['address'] }}" }
+  - { var: "OVERWRITEPROTOCOL", val: "https" }
+  - { var: "NEXTCLOUD_ADMIN_USER", val: "admin" }
+

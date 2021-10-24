@@ -1,0 +1,43 @@
+version: '3.3'
+
+services:
+  db:
+    image: mariadb:{{ tag_mariadb }}
+    restart: always
+    command: --transaction-isolation=READ-COMMITTED --binlog-format=ROW
+    volumes:
+      - ./data/db:/var/lib/mysql
+    env_file:
+      - ./.env
+
+  redis:
+    image: redis:{{ tag_redis }}
+    restart: always
+    volumes:
+      - ./data/redis:/var/lib/redis
+
+  app:
+    image: nextcloud:{{ tag_nextcloud }}
+    restart: always
+    depends_on:
+      - db
+      - redis
+    volumes:
+      - ./data/nextcloud:/var/www/html
+      - ./data/nextcloud/data:/var/www/html/data
+    env_file:
+      - ./.env
+    environment:
+{% for envs in compose_config_env %}
+      - {{ envs.var }}={{ envs.val }}
+{% endfor %}
+
+  web:
+    image: nginx:{{ tag_nginx }}
+    restart: always
+    ports:
+      - 127.0.0.1:{{ compose_config_tcp_port }}:80
+    volumes:
+      - ./data/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+    volumes_from:
+      - app
