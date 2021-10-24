@@ -39,5 +39,6 @@ services:
       - 127.0.0.1:{{ compose_config_tcp_port }}:80
     volumes:
       - ./data/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./data/nginx/uploadsize.conf:/etc/nginx/conf.d/uploadsize.conf:ro
     volumes_from:
       - app

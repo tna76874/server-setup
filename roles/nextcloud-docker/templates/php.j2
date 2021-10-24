@@ -1,0 +1,3 @@
+upload_max_filesize = {{ upload_limit|default(nc_config_php_upload_limit) }}
+post_max_size = {{ upload_limit|default(nc_config_php_upload_limit) }}
+max_execution_time = {{ nc_config_php_max_execution_time }}

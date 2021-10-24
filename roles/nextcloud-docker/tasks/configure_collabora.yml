@@ -5,6 +5,7 @@
   args:
     creates: '{{ nextcloud_www_dir }}/apps/richdocuments'
   register: install_collabora_app
+  failed_when: false
   
 - name: enable collabora app
   shell: '{{ docker_occ_cmd }} app:enable richdocuments'

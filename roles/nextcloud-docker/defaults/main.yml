@@ -18,7 +18,7 @@ start_compose: true
 server_user: root
 # project root
 project_root: "/srv/{{ docker_config_project }}"
-nextcloud_www_dir: "{{ project_root }}/data/nextcloud/"
+nextcloud_www_dir: "{{ project_root }}/data/nextcloud"
 compose_base_cmd: "docker-compose -f {{ project_root }}/docker-compose.yml exec -T"
 docker_occ_cmd: "{{ compose_base_cmd }} --user www-data app php occ"
 docker_php_cmd: "{{ compose_base_cmd }} --user www-data app php -f /var/www/html/cron.php"
@@ -35,6 +35,12 @@ nc_config_trusted_proxy: "{{ hostvars[inventory_hostname]['ansible_default_ipv4'
 online_office: 'collabora'
 fulltextsearch_enabled: false
 
+# php configs
+nc_config_php_upload_limit: '512M'
+nc_config_php_memory_limit: '512M'
+nc_config_php_max_execution_time: '7000'
+
+# env
 nc_config_collabora_url: "https://{{ nginx_domain_name }}:443"
 
 compose_config_tcp_port: "81"
@@ -46,6 +52,8 @@ compose_config_env:
   - { var: "TRUSTED_PROXIES", val: "{{ nc_config_trusted_proxy }}" }
   - { var: "OVERWRITEPROTOCOL", val: "https" }
   - { var: "NEXTCLOUD_ADMIN_USER", val: "admin" }
+  - { var: "PHP_MEMORY_LIMIT", val: "{{ nc_config_php_memory_limit }}" }
+  - { var: "PHP_UPLOAD_LIMIT", val: "{{ upload_limit|default(nc_config_php_upload_limit) }}" }
 
 nextccloud_system_config:
   - "overwrite.cli.url --value=https://{{ nginx_domain_name }}"

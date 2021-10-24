@@ -50,6 +50,20 @@
     - compose down
     - compose up
 
+- name: Ensure php.ini in {{ nextcloud_www_dir }}/config
+  template:
+    src:  "{{ item.src }}"
+    dest: "{{ item.dest }}"
+    owner: "{{ item.owner }}"
+    group: "{{ item.owner }}"
+    mode: 0644
+  loop:
+    - {src: "php.j2", dest: "{{ nextcloud_www_dir }}/config/php.ini", owner: "{{ 82 if ( 'alpine' in tag_nextcloud ) else 33 }}"}
+    - {src: "uploadsize.j2", dest: "{{ project_root }}/data/nginx/uploadsize.conf", owner: "{{ 82 if ( 'alpine' in tag_nextcloud ) else 33 }}"}
+  notify:
+    - compose down
+    - compose up
+
 - name: Compose startup state
   assert: { that: true, quiet: true }
   changed_when: true
@@ -64,6 +78,7 @@
   shell: "{{ compose_base_cmd }} app chown -R www-data:www-data /var/www/html/{{ item }}"
   changed_when: false
   loop:
+    - ""
     - "data"
     - "config"
     - "apps"
@@ -99,7 +114,7 @@
       - app:update --all
       - db:add-missing-indices
       - db:convert-filecache-bigint
-  when: force_nextcloud_config|default(true)
+  when: force_nextcloud_config|default(false)
 
 - name: create optimize batch job
   copy:
@@ -138,16 +153,19 @@
   include_tasks: configure_collabora.yml
   when: 
     - online_office == 'collabora'
+    - force_nextcloud_config|default(false)
     - ansible_architecture == 'x86_64'
 
 - name: setup onlyoffice app in nextcloud
   include_tasks: configure_onlyoffice.yml
   when: 
     - online_office == 'onlyoffice'
+    - force_nextcloud_config|default(false)
     - ansible_architecture == 'x86_64'
 
 - name: setup fulltextsearch app in nextcloud
   include_tasks: fulltextsearch.yml
   when: 
     - fulltextsearch_enabled|bool
+    - force_nextcloud_config|default(false)
     - ansible_architecture == 'x86_64'
