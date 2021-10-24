@@ -1,0 +1,20 @@
+---
+
+- name: install onlyoffice app
+  shell: '{{ docker_occ_cmd }} app:install onlyoffice'
+  args:
+    creates: '{{ nextcloud_www_dir }}/apps/onlyoffice'
+  register: install_onlyoffice_app
+  
+- name: enable onlyoffice app
+  shell: '{{ docker_occ_cmd }} app:enable onlyoffice'
+  when: install_onlyoffice_app is changed
+
+- name: setup onlyoffice app
+  shell: '{{ docker_occ_cmd }} --no-warnings config:system:set {{ item }}'
+  loop:
+    - 'onlyoffice DocumentServerUrl --value="/ds-vpath/"'
+    - 'onlyoffice DocumentServerInternalUrl --value="http://onlyoffice_documentserver/"'
+    - 'onlyoffice StorageUrl --value="http://nginx/"'
+    - 'allow_local_remote_servers  --value=true'
+  when: install_onlyoffice_app is changed
