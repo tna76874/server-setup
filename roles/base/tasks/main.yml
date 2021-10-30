@@ -100,14 +100,16 @@
   notify: restart sshd
 
 - name: Ensure scripts
-  copy:
-    src: "{{ item }}" 
-    dest: "/usr/local/bin"
-    owner: "root"
-    group: "root"
-    mode: 0755
-  with_items:
-    - "dockerexport.sh"
+  template:
+    src: "{{ item.file }}"
+    dest: "{{ item.destination }}"
+    owner: "{{ item.owner }}"
+    group: "{{ item.owner }}"
+    mode: "{{ item.mode }}"
+  become: yes
+  loop:
+    - { file: "backup.j2", destination: "/usr/local/bin/backup", owner: "root", mode: "0750" }
+    - { file: "dockerexport.j2", destination: "/usr/local/bin/dockerexport.sh", owner: "root", mode: "0750" }
 
 - name: Register timezone
   set_fact: time_zone="Europe/Berlin"
