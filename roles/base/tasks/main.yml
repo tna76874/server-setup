@@ -20,6 +20,11 @@
     state: present
   when: ansible_default_ipv4.address is defined
 
+- name: autoremove apt
+  apt:
+    autoremove: yes
+  ignore_errors: yes
+
 - name: Update apt
   apt:
     update_cache: yes
