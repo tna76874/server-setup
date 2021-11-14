@@ -51,11 +51,12 @@ if [ ! -f "$ENVFILE" ]; then
     read -e -p "RESTIC PW: " -i "$RESTIC_PASSWORD" RESTIC_PASSWORD
     if $(confirm "Use a REST server?") ; then
         BACKEND="rest"
-        read -e -p "PORT: " -i "8000" CON_PORT
+        read -e -p "PORT: " -i "443" CON_PORT
         read -e -p "PROTOCOL: " -i "https" CON_PROTOCOL
         read -e -p "USER: " -i "admin" CON_USER
         read -e -p "REST PW: " -i "" CON_PW
-        CON_REPO="$CON_USER"
+        read -e -p "Connetion Repo (could be left blank): " -i "" CON_REPO_USER
+        CON_REPO="$CON_USER"/"$CON_REPO_USER"
     else
         BACKEND="local"
         CON_REPO="local"
