@@ -47,7 +47,7 @@ if [ ! -f "$ENVFILE" ]; then
 
     RESTIC_PASSWORD=$(generatePassword)
 
-    read -e -p "HOST: " -i "restic.hilberg.eu" CON_HOST
+    read -e -p "HOST: " -i "domain.backupserver.xyz" CON_HOST
     read -e -p "RESTIC PW: " -i "$RESTIC_PASSWORD" RESTIC_PASSWORD
     if $(confirm "Use a REST server?") ; then
         BACKEND="rest"
@@ -126,7 +126,7 @@ usage() {
    ">&2
     exit 1
 }
-while getopts ':ib:d' opt
+while getopts ':b:id' opt
 #putting : in the beginnnig suppresses the errors for invalid options
 do
 case "$opt" in
