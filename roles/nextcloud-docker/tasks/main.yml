@@ -128,6 +128,17 @@
       {{ docker_occ_cmd }} files:scan --all
       {{ docker_occ_cmd }} files:scan-app-data
       exit 0
+
+- name: create optimize batch job
+  copy:
+    dest: /usr/local/bin/nextcloud_docker_occ
+    owner: root
+    group: root
+    mode: 0750
+    content: |
+      #!/bin/bash
+      {{ docker_occ_cmd }} "$@"
+      exit 0
       
 - name: optimize nextcloud cronjob
   cron:
