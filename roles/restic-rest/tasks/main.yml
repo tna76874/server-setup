@@ -8,6 +8,7 @@
     - init env
     - init user
     - copy certs
+  when: not config_reverse_proxy_frontend|bool
 
 - name: Ensure directories
   file:
@@ -20,6 +21,7 @@
     - { path: "{{ rest_certs_folder }}", owner: "{{ server_user }}", r: "no" }
   notify:
     - copy certs
+  when: not config_reverse_proxy_frontend|bool
 
 - name: Ensure nginx template
   template:
@@ -45,6 +47,7 @@
   loop:
     - { file: "docker-compose.j2", destination: "{{ project_root }}/docker-compose.yml", owner: "{{ server_user }}", mode: "0755" }
     - { file: "backup.j2", destination: "/usr/local/bin/backup", owner: "root", mode: "0750" }
+  when: not config_reverse_proxy_frontend|bool
   notify:
     - compose down
     - compose up
@@ -52,9 +55,9 @@
 - name: Compose startup state
   assert: { that: true, quiet: true }
   changed_when: true
+  when: (not config_reverse_proxy_frontend|bool) and (start_compose|bool)
   notify:
     - compose up
-  when: start_compose|bool
 
 - name: Ensure scripts
   template:
@@ -63,6 +66,7 @@
     owner: "{{ item.owner }}"
     group: "{{ item.owner }}"
     mode: "{{ item.mode }}"
+  when: not config_reverse_proxy_frontend|bool
   become: yes
   loop:
     - { file: "rest_server.j2", destination: "/usr/local/bin/rest_server", owner: "root", mode: "0750" }
@@ -77,21 +81,23 @@
     job: "/usr/local/bin/rest_copy_certs.sh > /dev/null 2>&1"
     cron_file: restic_rest_certs
     state: "{% if compose_tls_on_local_server|bool %}absent{% else %}present{% endif %}"
+  when: not config_reverse_proxy_frontend|bool
 
 - name: Flush handlers
   meta: flush_handlers
+  when: not config_reverse_proxy_frontend|bool
 
 - name: Restart compose
   assert: { that: true, quiet: true }
   changed_when: true
+  when: (not config_reverse_proxy_frontend|bool) and (not env_file.stat.exists)
   notify:
     - compose up
     - compose down
-  when: not env_file.stat.exists
 
 - name: init user
   assert: { that: true, quiet: true }
   changed_when: true
+  when: (not config_reverse_proxy_frontend|bool) and (compose_force_update_user|bool)
   notify:
     - init user
-  when: compose_force_update_user|bool

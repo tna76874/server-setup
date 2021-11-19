@@ -30,6 +30,7 @@ compose_config_restic_users:
   - { user: "backup", pw: "{{ lookup('password', '/dev/null length=64 chars=ascii_letters,digits') }}" }
 
 compose_force_update_user: false
+config_reverse_proxy_frontend: false
 
 # env
 compose_config_tcp_port: "7234"
