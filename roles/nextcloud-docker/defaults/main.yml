@@ -4,6 +4,7 @@ tag_nextcloud: '22.2.0-fpm-alpine'
 tag_redis: '6.2.6'
 tag_mariadb: '10.5'
 tag_nginx: 'latest'
+tag_calbackup: 'latest'
 
 # nginx fpm config
 config_nginx_fpm: "https://raw.githubusercontent.com/nextcloud/docker/master/.examples/docker-compose/with-nginx-proxy/mariadb/fpm/web/nginx.conf"
@@ -19,6 +20,7 @@ server_user: root
 # project root
 project_root: "/srv/{{ docker_config_project }}"
 nextcloud_www_dir: "{{ project_root }}/data/nextcloud"
+calbackup_dir: "{{ project_root }}/data/calbackup"
 compose_base_cmd: "docker-compose -f {{ project_root }}/docker-compose.yml exec -T"
 docker_occ_cmd: "{{ compose_base_cmd }} --user www-data app php occ"
 docker_php_cmd: "{{ compose_base_cmd }} --user www-data app php -f /var/www/html/cron.php"
@@ -34,6 +36,8 @@ compose_config_nc_admin_pw: "{{ lookup('password', '/dev/null length=32 chars=as
 nc_config_trusted_proxy: "{{ hostvars[inventory_hostname]['ansible_default_ipv4']['address'] }}"
 online_office: 'collabora'
 fulltextsearch_enabled: false
+
+enable_calbackup: true
 
 # php configs
 nc_config_php_upload_limit: '512M'

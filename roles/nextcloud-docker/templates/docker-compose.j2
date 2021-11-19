@@ -42,3 +42,28 @@ services:
       - ./data/nginx/uploadsize.conf:/etc/nginx/conf.d/uploadsize.conf:ro
     volumes_from:
       - app
+
+{% if enable_calbackup|bool %}
+  nextcloud-nc-backup:
+    image: waja/calcardbackup:{{ tag_calbackup }}
+    links:
+      - db:nextcloud-db
+      - web:nextcloud
+    environment:
+      - CRON_TIME=5 4 * * *
+      - INIT_BACKUP=yes
+      - CALCARD_OPTS=-i -r 20
+      - NC_DIR=/nextcloud
+      - NC_HOST={{ nginx_domain_name }}
+      - NC_PORT=80
+      - DB_HOST=db
+    depends_on:
+      - db
+      - web
+    restart: unless-stopped
+    volumes:
+      - ./data/calbackup:/backup
+      - ./data/nextcloud/config:/nextcloud/config:ro
+      - /etc/localtime:/etc/localtime:ro
+      - /etc/timezone:/etc/timezone:ro
+{% endif %}
