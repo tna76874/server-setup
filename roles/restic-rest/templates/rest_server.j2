@@ -1,0 +1,38 @@
+#!/bin/bash
+
+function generatePassword() {
+    cat /dev/urandom | tr -dc a-zA-Z0-9 | fold -w 64 | head -n 1
+}
+
+addresticuser() {
+    PW=$(generatePassword)
+    {{ docker_cmd }} create_user "$1" "$PW"
+    echo -e "USER: ${1}\nPW: ${PW}\n\nSave these credentials - they does not get saved somewhere else!"
+}
+
+# ###### Parsing arguments
+
+#Usage print
+usage() {
+    echo "Usage: $0 -[n]" >&2
+    echo "
+   -n,    Add/update new restic user
+   ">&2
+    exit 1
+}
+
+while getopts ':n:' opt
+#putting : in the beginnnig suppresses the errors for invalid options
+do
+case "$opt" in
+   'n')addresticuser "$OPTARG";
+       ;;
+    *) {{ docker_cmd }} "$@";
+       ;;
+esac
+done
+if [ $OPTIND -eq 1 ]; then
+    usage
+fi
+
+exit 0

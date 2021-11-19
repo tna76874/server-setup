@@ -1,0 +1,4 @@
+#!/bin/bash
+scp /etc/letsencrypt/live/{{ nginx_domain_name }}/fullchain.pem {{ rest_certs_folder }}
+scp /etc/letsencrypt/live/{{ nginx_domain_name }}/privkey.pem {{ rest_certs_folder }}
+exit 0

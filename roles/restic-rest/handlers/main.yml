@@ -1,0 +1,47 @@
+---
+- name: init env
+  template:
+    src: "{{ item.file }}"
+    dest: "{{ item.destination }}"
+    owner: "{{ item.owner }}"
+    group: "{{ item.owner }}"
+    mode: "{{ item.mode }}"
+  become: yes
+  loop:
+    - { file: "env.j2", destination: "{{ project_root }}/.env", owner: "{{ server_user }}", mode: "0755" }
+  notify:
+    - compose down
+    - compose up
+
+- name: ensure compose down
+  docker_compose:
+    project_src: "{{ project_root }}"
+    state: absent
+  ignore_errors: yes
+  when: compose_file.stat.exists
+
+- name: reload nginx
+  service:
+    name: nginx
+    state: reloaded
+
+- name: compose down
+  docker_compose:
+    project_src: "{{ project_root }}"
+    state: absent
+
+- name: copy certs
+  shell: "/usr/local/bin/rest_copy_certs.sh > /dev/null 2>&1"
+  become: true
+  when: not compose_tls_on_local_server|bool
+
+- name: compose up
+  docker_compose:
+    project_src: "{{ project_root }}"
+    state: present
+    pull: yes
+
+- name: init user
+  shell: '{{ docker_cmd }} create_user {{ item.user }} {{ item.pw }}'
+  become: true
+  loop: "{{ compose_config_restic_users }}"

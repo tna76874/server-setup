@@ -1,0 +1,97 @@
+---
+- name: Check .env file
+  stat: 
+    path: "{{ project_root }}/.env"
+  register: env_file
+  changed_when: not env_file.stat.exists
+  notify:
+    - init env
+    - init user
+    - copy certs
+
+- name: Ensure directories
+  file:
+    path: "{{ item.path }}"
+    owner: "{{ item.owner }}"
+    state: directory
+    recurse: "{{ item.r }}"
+  loop:
+    - { path: "{{ project_root }}", owner: "{{ server_user }}", r: "no" }
+    - { path: "{{ rest_certs_folder }}", owner: "{{ server_user }}", r: "no" }
+  notify:
+    - copy certs
+
+- name: Ensure nginx template
+  template:
+    src: "{{ item.file }}"
+    dest: "{{ item.destination }}"
+    owner: "{{ item.owner }}"
+    mode: "{{ item.mode }}"
+  loop:
+    - { file: "nginx.j2", destination: "/etc/nginx/{{ nginx_domain_name }}.d/nginx.conf", owner: "root", mode: "0644" }
+  become: yes
+  when: (nginx_domain_name != None) and (not compose_tls_enable|bool)
+  notify:
+    - reload nginx
+
+- name: init templates
+  template:
+    src: "{{ item.file }}"
+    dest: "{{ item.destination }}"
+    owner: "{{ item.owner }}"
+    group: "{{ item.owner }}"
+    mode: "{{ item.mode }}"
+  become: yes
+  loop:
+    - { file: "docker-compose.j2", destination: "{{ project_root }}/docker-compose.yml", owner: "{{ server_user }}", mode: "0755" }
+    - { file: "backup.j2", destination: "/usr/local/bin/backup", owner: "root", mode: "0750" }
+  notify:
+    - compose down
+    - compose up
+
+- name: Compose startup state
+  assert: { that: true, quiet: true }
+  changed_when: true
+  notify:
+    - compose up
+  when: start_compose|bool
+
+- name: Ensure scripts
+  template:
+    src: "{{ item.file }}"
+    dest: "{{ item.destination }}"
+    owner: "{{ item.owner }}"
+    group: "{{ item.owner }}"
+    mode: "{{ item.mode }}"
+  become: yes
+  loop:
+    - { file: "rest_server.j2", destination: "/usr/local/bin/rest_server", owner: "root", mode: "0750" }
+    - { file: "rest_copy_certs.j2", destination: "/usr/local/bin/rest_copy_certs.sh", owner: "root", mode: "0750" }
+ 
+- name: Ensure certificates
+  cron:
+    name: letsencrypt certs copy
+    minute: '15'
+    hour:   '01'
+    user: root
+    job: "/usr/local/bin/rest_copy_certs.sh > /dev/null 2>&1"
+    cron_file: restic_rest_certs
+    state: "{% if compose_tls_on_local_server|bool %}absent{% else %}present{% endif %}"
+
+- name: Flush handlers
+  meta: flush_handlers
+
+- name: Restart compose
+  assert: { that: true, quiet: true }
+  changed_when: true
+  notify:
+    - compose up
+    - compose down
+  when: not env_file.stat.exists
+
+- name: init user
+  assert: { that: true, quiet: true }
+  changed_when: true
+  notify:
+    - init user
+  when: compose_force_update_user|bool

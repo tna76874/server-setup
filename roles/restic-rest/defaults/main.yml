@@ -1,0 +1,43 @@
+---
+# docker image tags
+tag_restic: 'latest'
+
+## compose settings
+# ensure docker-compose gets restarted on every run
+restart_compose: false
+# docker-compose project name
+docker_config_project: restic-rest
+# start docker by default
+start_compose: true
+# running user
+server_user: root
+
+## Paths
+# project root
+project_root: "/srv/{{ docker_config_project }}"
+rest_certs_folder: "{{ project_root }}/certs"
+
+# Commands
+compose_base_cmd: "docker-compose -f {{ project_root }}/docker-compose.yml -p {{ docker_config_project }} exec -T"
+docker_cmd: "{{ compose_base_cmd }} restic"
+
+# public domain of the server
+nginx_domain_name: 
+
+# Docker-compose configs
+compose_config_startup: always
+compose_config_restic_users:
+  - { user: "backup", pw: "{{ lookup('password', '/dev/null length=64 chars=ascii_letters,digits') }}" }
+
+compose_force_update_user: false
+
+# env
+compose_config_tcp_port: "7234"
+compose_config_host_bind: "127.0.0.1:"
+compose_tls_on_local_server: true
+compose_tls_enable: false
+compose_tls_path: "{% if compose_tls_on_local_server|bool %}/etc/letsencrypt/live/{{ nginx_domain_name }}{% else %}/certs{% endif %}"
+
+compose_env_options:
+  - "--append-only"
+  - "--private-repos"

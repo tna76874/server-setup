@@ -1,0 +1,21 @@
+version: '3'
+services:
+  restic:
+    image: restic/rest-server:{{ tag_restic }}
+    container_name: {{ docker_config_project }}
+    ports:
+      - {{ compose_config_host_bind }}{{ compose_config_tcp_port }}:8000
+    volumes:
+      - ./data:/data
+      - ./certs:/certs
+{% if compose_tls_on_local_server|bool and compose_tls_enable %}
+      - /etc/letsencrypt/live/{{ nginx_domain_name }}/fullchain.pem:/etc/letsencrypt/live/{{ nginx_domain_name }}/fullchain.pem
+      - /etc/letsencrypt/live/{{ nginx_domain_name }}/privkey.pem:/etc/letsencrypt/live/{{ nginx_domain_name }}/privkey.pem
+{% endif %}
+    environment:
+{% if compose_tls_enable|bool %}
+      - OPTIONS="{{ " ".join(compose_env_options) }} --tls --tls-cert {{ compose_tls_path }}/fullchain.pem --tls-key {{ compose_tls_path }}/privkey.pem"
+{% else %}
+      - OPTIONS="{{ " ".join(compose_env_options) }} "
+{% endif %}
+    restart: {{ compose_config_startup }}
