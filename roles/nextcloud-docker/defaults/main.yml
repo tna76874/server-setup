@@ -60,6 +60,8 @@ nextccloud_system_config:
   - "trusted_domains 0 --value={{ nginx_domain_name }}"
   - "trusted_proxies 0 --value={{ nc_config_trusted_proxy }}"
   - "trusted_proxies 1 --value=127.0.0.1"
+  - "forwarded_for_headers 0 --value='X-Forwarded-For'"
+  - "forwarded_for_headers 1 --value='HTTP_X_FORWARDED_FOR'"
   - "redis host --value='redis'"
   - "redis port --value='6379' --type=integer"
   - "redis timeout --value='0' --type=integer"
@@ -127,3 +129,6 @@ nextcloud_app_config:
     state: enable
   - name: files_pdfviewer
     state: enable
+
+# cal backup
+nextcloud_cal_backup: {url: "https://codeberg.org/BernieO/calcardbackup.git", version: "v3.3.0", path: "{{ project_root }}/data/calbackup", user: "www-data"}
