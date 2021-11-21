@@ -21,6 +21,7 @@ server_user: root
 project_root: "/srv/{{ docker_config_project }}"
 nextcloud_www_dir: "{{ project_root }}/data/nextcloud"
 calbackup_dir: "{{ project_root }}/data/calbackup"
+nextcloud_database_dump_dir: "{{ project_root }}/db_backup"
 compose_base_cmd: "docker-compose -f {{ project_root }}/docker-compose.yml exec -T"
 docker_occ_cmd: "{{ compose_base_cmd }} --user www-data app php occ"
 docker_php_cmd: "{{ compose_base_cmd }} --user www-data app php -f /var/www/html/cron.php"
@@ -38,6 +39,11 @@ online_office: 'collabora'
 fulltextsearch_enabled: false
 
 enable_calbackup: true
+
+# BACKUPs
+
+backup_jobs: []
+config_backups_enabled: true
 
 # php configs
 nc_config_php_upload_limit: '512M'

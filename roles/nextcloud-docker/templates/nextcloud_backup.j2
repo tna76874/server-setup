@@ -1,0 +1,24 @@
+#!/bin/bash
+
+# abort entire script if any command fails
+set -e
+
+# Make sure nextcloud is enabled when we are done
+trap "{{ docker_occ_cmd }} maintenance:mode --off" EXIT
+
+# set nextcloud to maintenance mode
+{{ docker_occ_cmd }} maintenance:mode --on
+
+source {{ project_root }}/.env
+{{ compose_base_cmd }} db mysqldump --single-transaction -h localhost -u "$MYSQL_USER" -p"$MYSQL_PASSWORD" "$MYSQL_DATABASE" > {{ nextcloud_database_dump_dir }}/db_dump_mysql_nextcloud.sql
+
+# run indivudual backup jobs
+{% for backup_job in backup_jobs %}
+{{ backup_job }}
+{% endfor %}
+
+# end maintenance mode
+{{ docker_occ_cmd }} maintenance:mode --off
+
+# delete trap
+trap "" EXIT

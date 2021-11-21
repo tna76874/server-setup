@@ -1,0 +1,5 @@
+#!/bin/bash
+{{ compose_base_cmd }} redis redis-cli FLUSHALL
+{{ docker_occ_cmd }} files:scan --all
+{{ docker_occ_cmd }} files:scan-app-data
+exit 0

@@ -17,6 +17,7 @@
     - { path: "{{ project_root }}", owner: "{{ server_user }}", r: "no" }
     - { path: "{{ project_root }}/data/nginx", owner: "{{ server_user }}", r: "no" }
     - { path: "{{ project_root }}/data/nextcloud", owner: "www-data", r: "no" }
+    - { path: "{{ nextcloud_database_dump_dir }}", owner: "{{ server_user }}", r: "no" }
 
 - name: Ensure nginx.conf
   get_url:
@@ -106,7 +107,7 @@
     shell: '{{ docker_occ_cmd }} app:{{ item.state }} {{ item.name }}'
     loop:  '{{ nextcloud_app_config }}'
 
-  - name: backup jobs, upgrade apps and database tuning
+  - name: upgrade apps and database tuning
     shell: '{{ docker_occ_cmd }} {{ item }}'
     loop:
       - background:cron
@@ -116,30 +117,18 @@
       - db:convert-filecache-bigint
   when: force_nextcloud_config|default(false)
 
-- name: create optimize batch job
-  copy:
-    dest: /usr/local/bin/nextcloud_optimize.sh
-    owner: root
-    group: root
-    mode: 0750
-    content: |
-      #!/bin/bash
-      {{ compose_base_cmd }} redis redis-cli FLUSHALL
-      {{ docker_occ_cmd }} files:scan --all
-      {{ docker_occ_cmd }} files:scan-app-data
-      exit 0
-
-- name: create optimize batch job
-  copy:
-    dest: /usr/local/bin/nextcloud_docker_occ
-    owner: root
-    group: root
-    mode: 0750
-    content: |
-      #!/bin/bash
-      {{ docker_occ_cmd }} "$@"
-      exit 0
-      
+- name: Ensure system scripts
+  template:
+    src: "{{ item.file }}"
+    dest: "{{ item.destination }}"
+    owner: "{{ item.owner }}"
+    mode: "{{ item.mode }}"
+  become: yes
+  loop:
+    - { file: "nextcloud_optimize.j2", destination: "/usr/local/bin/nextcloud_optimize.sh", owner: "root", mode: "0750" }
+    - { file: "nextcloud_docker_occ.j2", destination: "/usr/local/bin/nextcloud_docker_occ", owner: "root", mode: "0750" }
+    - { file: "nextcloud_backup.j2", destination: "/usr/local/bin/nextcloud_backup", owner: "root", mode: "0750" }
+ 
 - name: optimize nextcloud cronjob
   cron:
     name: nextcloud optimize
@@ -156,6 +145,16 @@
     user: root
     job: "{{ docker_php_cmd }} > /dev/null 2>&1"
     cron_file: nextcloud_cron
+
+- name: Ensure backup cron job
+  cron:
+    name: nextcloud backup
+    minute: '0'
+    hour:   '23'
+    user: root
+    job: "/usr/local/bin/nextcloud_backup > /dev/null 2>&1"
+    cron_file: nextcloud_backup
+    state: "{% if config_backups_enabled|bool %}present{% else %}absent{% endif %}"
 
 - name: run nextcloud cronjob once
   shell: '{{ docker_php_cmd }} > /dev/null 2>&1'
