@@ -150,7 +150,7 @@
   cron:
     name: nextcloud backup
     minute: "{{ config_backup_cron.minute }}"
-    hour:   "{{ config_backup_cron.hout }}"
+    hour:   "{{ config_backup_cron.hour }}"
     day:  "{{ config_backup_cron.day }}"
     month: "{{ config_backup_cron.month }}"
     user: root
