@@ -1,0 +1,15 @@
+version: '3'
+services:
+  collabora:
+    image: collabora/code:{{ tag_collabora }}
+    ports:
+      - 127.0.0.1:{{ compose_config_tcp_port }}:9980
+    environment:
+{% for envs in compose_config_env %}
+      - {{ envs.var }}={{ envs.val }}
+{% endfor %}
+      - domain={{ collabora_listen_domain.replace('.','\\\\.') }}
+      - username=admin
+      - {% raw %}password=${PASSWORD}{% endraw %}
+
+    restart: {{ compose_config_startup }}
