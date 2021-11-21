@@ -128,7 +128,7 @@ nextccloud_mail_config:
   - {key: "mail_smtpsecure", type: "string", value: "\'{{ nextcloud_mail_smtpsecure|default('tls') }}\'"}
   - {key: "mail_smtpmode", type: "string", value: "\'{{ nextcloud_mail_smtpmode|default('smtp') }}\'"}
   - {key: "mail_sendmailmode", type: "string", value: "\'{{ nextcloud_mail_sendmailmode|default('smtp') }}\'"}
-  - {key: "mail_smtpauth", type: "boolean", value: "{{ nextcloud_mail_smtpauth|default(1) }}"}
+  - {key: "mail_smtpauth", type: "boolean", value: "{{ nextcloud_mail_smtpauth|default('true') }}"}
   - {key: "mail_smtpport", type: "string", value: "\'{{ nextcloud_mail_smtpport|default('587') }}\'"}
   - {key: "mail_smtpauthtype", type: "string", value: "\'{{ nextcloud_mail_smtpauthtype|default('LOGIN') }}\'"}
 
