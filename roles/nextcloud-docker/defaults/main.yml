@@ -44,6 +44,7 @@ enable_calbackup: true
 
 backup_jobs: []
 config_backups_enabled: true
+config_backup_cron: { month: "*", day: "*", hour: "3", minute: "0" }
 
 # php configs
 nc_config_php_upload_limit: '512M'

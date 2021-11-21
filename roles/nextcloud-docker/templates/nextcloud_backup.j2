@@ -14,8 +14,9 @@ source {{ project_root }}/.env
 
 # run indivudual backup jobs
 {% for backup_job in backup_jobs %}
-{{ backup_job }}
+( {{ backup_job }} ) &
 {% endfor %}
+wait
 
 # end maintenance mode
 {{ docker_occ_cmd }} maintenance:mode --off
