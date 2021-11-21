@@ -119,18 +119,18 @@ nextccloud_system_config:
 nextcloud_configure_mail: false
 
 nextccloud_mail_config:
-  - {key: "mail_from_address", value: "\'{{ nextcloud_mail_from }}\'"}
-  - {key: "mail_domain", value: "\'{{ nextcloud_mail_domain }}\'"}
-  - {key: "mail_smtphost", value: "\'{{ nextcloud_mail_smtphost }}\'"}
-  - {key: "mail_smtpname", value: "\'{{ nextcloud_mail_smtpname }}\'"}
-  - {key: "mail_smtppassword", value: "\'{{ nextcloud_mail_smtppwd }}\'"}
+  - {key: "mail_from_address", type: "string", value: "\'{{ nextcloud_mail_from }}\'"}
+  - {key: "mail_domain", type: "string", value: "\'{{ nextcloud_mail_domain }}\'"}
+  - {key: "mail_smtphost", type: "string", value: "\'{{ nextcloud_mail_smtphost }}\'"}
+  - {key: "mail_smtpname", type: "string", value: "\'{{ nextcloud_mail_smtpname }}\'"}
+  - {key: "mail_smtppassword", type: "string", value: "\'{{ nextcloud_mail_smtppwd }}\'"}
   # Default values
-  - {key: "mail_smtpsecure", value: "\'{{ nextcloud_mail_smtpsecure|default('tls') }}\'"}
-  - {key: "mail_smtpmode", value: "\'{{ nextcloud_mail_smtpmode|default('smtp') }}\'"}
-  - {key: "mail_sendmailmode", value: "\'{{ nextcloud_mail_sendmailmode|default('smtp') }}\'"}
-  - {key: "mail_smtpauth", value: "{{ nextcloud_mail_smtpauth|default(1) }}"}
-  - {key: "mail_smtpport", value: "\'{{ nextcloud_mail_smtpport|default('587') }}\'"}
-  - {key: "mail_smtpauthtype", value: "\'{{ nextcloud_mail_smtpauthtype|default('LOGIN') }}\'"}
+  - {key: "mail_smtpsecure", type: "string", value: "\'{{ nextcloud_mail_smtpsecure|default('tls') }}\'"}
+  - {key: "mail_smtpmode", type: "string", value: "\'{{ nextcloud_mail_smtpmode|default('smtp') }}\'"}
+  - {key: "mail_sendmailmode", type: "string", value: "\'{{ nextcloud_mail_sendmailmode|default('smtp') }}\'"}
+  - {key: "mail_smtpauth", type: "boolean", value: "{{ nextcloud_mail_smtpauth|default(1) }}"}
+  - {key: "mail_smtpport", type: "string", value: "\'{{ nextcloud_mail_smtpport|default('587') }}\'"}
+  - {key: "mail_smtpauthtype", type: "string", value: "\'{{ nextcloud_mail_smtpauthtype|default('LOGIN') }}\'"}
 
 nextcloud_app_config:
   - {name: "survey_client", state: "disable"}

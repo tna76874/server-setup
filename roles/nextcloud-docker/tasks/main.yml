@@ -92,7 +92,7 @@
     loop:  '{{ nextccloud_system_config }}'
 
   - name: set nextcloud mail config.php values
-    shell: '{{ docker_occ_cmd }} config:system:set {{ item.key }} --value={{ item.value }}'
+    shell: '{{ docker_occ_cmd }} config:system:set {{ item.key }} --value={{ item.value }} --type={{ item.type }}'
     loop:  '{{ nextccloud_mail_config }}'
     when: 
       - nextcloud_configure_mail|bool
@@ -102,6 +102,7 @@
     args:
       creates: '{{ nextcloud_www_dir }}/apps/{{ item.name }}'
     loop:  '{{ nextcloud_app_config }}'
+    failed_when: false
     
   - name: '{{ item.state }} {{ item.name }} app'
     shell: '{{ docker_occ_cmd }} app:{{ item.state }} {{ item.name }}'
