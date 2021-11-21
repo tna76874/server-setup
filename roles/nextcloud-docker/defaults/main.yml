@@ -118,28 +118,27 @@ nextccloud_system_config:
 
 nextcloud_configure_mail: false
 
-# nextccloud_mail_config:
-#   - "mail_from_address --value={{ nextcloud_mail_from }}"
-#   - "mail_smtpmode     --value={{ nextcloud_mail_smtpmode }}"
-#   - "mail_smtpauthtype --value={{ nextcloud_mail_smtpauthtype }}"
-#   - "mail_domain       --value={{ nextcloud_mail_domain }}"
-#   - "mail_smtpname     --value={{ nextcloud_mail_smtpname }}"
-#   - "mail_smtpsecure   --value={{ nextcloud_mail_smtpsecure }}"
-#   - "mail_smtpauth     --value={{ nextcloud_mail_smtpauth }}"
-#   - "mail_smtphost     --value={{ nextcloud_mail_smtphost }}"
-#   - "mail_smtpport     --value={{ nextcloud_mail_smtpport }}"
-#   - "mail_smtpname     --value={{ nextcloud_mail_smtpname }}"
-#   - "mail_smtppassword --value={{ nextcloud_mail_smtppwd }}"
+nextccloud_mail_config:
+  - {key: "mail_from_address", value: "\'{{ nextcloud_mail_from }}\'"}
+  - {key: "mail_domain", value: "\'{{ nextcloud_mail_domain }}\'"}
+  - {key: "mail_smtphost", value: "\'{{ nextcloud_mail_smtphost }}\'"}
+  - {key: "mail_smtpname", value: "\'{{ nextcloud_mail_smtpname }}\'"}
+  - {key: "mail_smtppassword", value: "\'{{ nextcloud_mail_smtppwd }}\'"}
+  # Default values
+  - {key: "mail_smtpsecure", value: "\'{{ nextcloud_mail_smtpsecure|default('tls') }}\'"}
+  - {key: "mail_smtpmode", value: "\'{{ nextcloud_mail_smtpmode|default('smtp') }}\'"}
+  - {key: "mail_sendmailmode", value: "\'{{ nextcloud_mail_sendmailmode|default('smtp') }}\'"}
+  - {key: "mail_smtpauth", value: "{{ nextcloud_mail_smtpauth|default(1) }}"}
+  - {key: "mail_smtpport", value: "\'{{ nextcloud_mail_smtpport|default('587') }}\'"}
+  - {key: "mail_smtpauthtype", value: "\'{{ nextcloud_mail_smtpauthtype|default('LOGIN') }}\'"}
 
 nextcloud_app_config:
-  - name: survey_client
-    state: disable
-  - name: firstrunwizard
-    state: disable
-  - name: admin_audit
-    state: enable
-  - name: files_pdfviewer
-    state: enable
+  - {name: "survey_client", state: "disable"}
+  - {name: "firstrunwizard", state: "disable"}
+  - {name: "admin_audit", state: "enable"}
+  - {name: "files_pdfviewer", state: "enable"}
+  - {name: "sharebymail", state: "enable"}
+  - {name: "registration", state: "enable"}
 
-# cal backup
-nextcloud_cal_backup: {url: "https://codeberg.org/BernieO/calcardbackup.git", version: "v3.3.0", path: "{{ project_root }}/data/calbackup", user: "www-data"}
+
+  
