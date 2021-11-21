@@ -128,6 +128,7 @@
     - { file: "nextcloud_optimize.j2", destination: "/usr/local/bin/nextcloud_optimize.sh", owner: "root", mode: "0750" }
     - { file: "nextcloud_docker_occ.j2", destination: "/usr/local/bin/nextcloud_docker_occ", owner: "root", mode: "0750" }
     - { file: "nextcloud_backup.j2", destination: "/usr/local/bin/nextcloud_backup", owner: "root", mode: "0750" }
+    - { file: "nextcloud_maintenance.j2", destination: "/usr/local/bin/nextcloud_maintenance", owner: "root", mode: "0750" }
  
 - name: optimize nextcloud cronjob
   cron:
