@@ -1,8 +1,5 @@
 #!/bin/bash
 
-# abort entire script if any command fails
-set -e
-
 # Make sure nextcloud is enabled when we are done
 trap "{{ docker_occ_cmd }} maintenance:mode --off" EXIT
 
