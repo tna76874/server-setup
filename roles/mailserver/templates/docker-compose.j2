@@ -6,11 +6,19 @@ services:
     domainname: ${DOMAINNAME}
     container_name: ${CONTAINER_NAME}
     env_file: mailserver.env
+{% if (compose_config_env not []) %}
+    environment:
+{% for envs in compose_config_env %}
+      - {{ envs.var }}={{ envs.val }}
+{% endfor %}
+{% endif %}
     ports:
-      - "25:25"
-      - "143:143"
-      - "587:587"
-      - "993:993"
+{% for port in compose_ports %}
+      - {{ port.bind }}{{ port.host }}:{{ port.container }}
+{% endfor %}
+{% for port in compose_extra_ports %}
+      - {{ port.bind }}{{ port.host }}:{{ port.container }}
+{% endfor %}
     volumes:
       - ./maildata:/var/mail
       - ./mailstate:/var/mail-state

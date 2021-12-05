@@ -14,3 +14,15 @@ config_fail2ban: 1
 config_log_trigger: daily_cron
 config_postmaster: 
 config_message_limit: 102400000
+
+compose_ports:
+  - { bind: "", host: "25", container: "25/tcp" }
+  - { bind: "", host: "143", container: "143/tcp" }
+  - { bind: "", host: "587", container: "587/tcp" }
+  - { bind: "", host: "993", container: "993/tcp" }
+
+compose_extra_ports: []
+  # - { bind: "", host: "4190", container: "4190" }
+
+compose_config_env: []
+  # - { var: "ENABLE_MANAGESIEVE", val: "1" }
