@@ -113,7 +113,7 @@
     mode: "{{ item.mode }}"
   become: yes
   loop:
-    - { file: "backup.j2", destination: "/usr/local/bin/backup", owner: "root", mode: "0750" }
+    - { file: "backup.j2", destination: "/usr/local/bin/backup", owner: "root", mode: "0755" }
     - { file: "dockerexport.j2", destination: "/usr/local/bin/dockerexport.sh", owner: "root", mode: "0750" }
 
 - name: Register timezone
