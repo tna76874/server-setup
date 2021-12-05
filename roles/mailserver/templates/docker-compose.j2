@@ -6,7 +6,7 @@ services:
     domainname: ${DOMAINNAME}
     container_name: ${CONTAINER_NAME}
     env_file: mailserver.env
-{% if (compose_config_env not []) %}
+{% if ( compose_config_env != [] ) %}
     environment:
 {% for envs in compose_config_env %}
       - {{ envs.var }}={{ envs.val }}
