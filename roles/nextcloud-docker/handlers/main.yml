@@ -13,6 +13,13 @@
     - compose down
     - compose up
 
+- name: first setup nextcloud
+  shell: >
+    {{ docker_occ_cmd }} maintenance:install 
+    --database {{ nextcloud_db_type }} --database-host {{ nextcloud_db_host }} --database-name {{ nextcloud_db_name }} 
+    --database-user {{ nextcloud_db_user }} --database-pass {{ nextcloud_db_passwd }} 
+    --admin-user {{ nextcloud_admin }} --admin-pass {{ compose_config_nc_admin_pw }} --data-dir {{ nextcloud_container_data_dir }}
+
 - name: reload nginx
   service:
     name: nginx

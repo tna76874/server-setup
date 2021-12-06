@@ -6,6 +6,7 @@
   changed_when: not env_file.stat.exists
   notify:
     - init env
+    - first setup nextcloud
 
 - name: Ensure directories
   file:
@@ -33,7 +34,7 @@
   loop:
     - { file: "nginx.j2", destination: "/etc/nginx/{{ nginx_domain_name }}.d/{{ docker_config_project }}.conf", owner: "root", mode: "0644" }
   become: yes
-  when: nginx_domain_name != None
+  when: ( nginx_domain_name != None ) and ( config_deploy_nginx_config|bool )
   notify:
     - reload nginx
 
@@ -51,6 +52,16 @@
     - compose down
     - compose up
 
+- name: Compose startup state
+  assert: { that: true, quiet: true }
+  changed_when: true
+  notify:
+    - compose up
+  when: start_compose|bool
+
+- name: Flush handlers
+  meta: flush_handlers
+
 - name: Ensure php.ini in {{ nextcloud_www_dir }}/config
   template:
     src:  "{{ item.src }}"
@@ -64,16 +75,6 @@
   notify:
     - compose down
     - compose up
-
-- name: Compose startup state
-  assert: { that: true, quiet: true }
-  changed_when: true
-  notify:
-    - compose up
-  when: start_compose|bool
-
-- name: Flush handlers
-  meta: flush_handlers
 
 - name: Ensure Permissions
   shell: "{{ compose_base_cmd }} app chown -R www-data:www-data /var/www/html/{{ item }}"

@@ -28,6 +28,7 @@ docker_php_cmd: "{{ compose_base_cmd }} --user www-data app php -f /var/www/html
 
 # public domain of the server
 nginx_domain_name: 
+config_deploy_nginx_config: true
 # Docker-compose configs
 compose_config_startup: always
 compose_config_mysql_pw: "{{ lookup('password', '/dev/null length=32 chars=ascii_letters,digits') }}"
@@ -39,6 +40,17 @@ online_office: 'collabora'
 fulltextsearch_enabled: false
 
 enable_calbackup: true
+
+# Database
+
+nextcloud_db_type: 'mysql'
+nextcloud_db_host: 'db'
+nextcloud_db_name: 'nextcloud'
+nextcloud_db_user: 'nextcloud'
+nextcloud_db_passwd: "{{ compose_config_mysql_pw }}"
+nextcloud_db_prefix: 'oc_'
+
+nextcloud_container_data_dir:  '/var/www/html/data'
 
 # BACKUPs
 
