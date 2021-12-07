@@ -25,6 +25,9 @@ services:
     volumes:
       - ./data/nextcloud:/var/www/html
       - ./data/nextcloud/data:/var/www/html/data
+{% for vol in compose_extra_volumes %}
+      - {{ vol.host }}:{{ vol.container }}{{ vol.mode }}
+{% endfor %}
     env_file:
       - ./.env
     environment:

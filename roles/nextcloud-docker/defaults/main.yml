@@ -41,6 +41,9 @@ fulltextsearch_enabled: false
 
 enable_calbackup: true
 
+compose_extra_volumes: []
+  # - { host: "./data/test", container: "/test", mode: ":ro" } 
+
 # Database
 
 nextcloud_db_type: 'mysql'

@@ -32,7 +32,7 @@
     owner: "{{ item.owner }}"
     mode: "{{ item.mode }}"
   loop:
-    - { file: "nginx.j2", destination: "/etc/nginx/{{ nginx_domain_name }}.d/{{ docker_config_project }}.conf", owner: "root", mode: "0644" }
+    - { file: "nginx.j2", destination: "/etc/nginx/{{ nginx_domain_name }}.d/nginx.conf", owner: "root", mode: "0644" }
   become: yes
   when: ( nginx_domain_name != None ) and ( config_deploy_nginx_config|bool )
   notify:
