@@ -24,7 +24,7 @@ calbackup_dir: "{{ project_root }}/data/calbackup"
 nextcloud_database_dump_dir: "{{ project_root }}/db_backup"
 compose_base_cmd: "docker-compose -f {{ project_root }}/docker-compose.yml exec -T"
 docker_occ_cmd: "{{ compose_base_cmd }} --user www-data app php occ"
-docker_php_cmd: "{{ compose_base_cmd }} --user www-data app php -f /var/www/html/cron.php"
+docker_php_cmd: "{{ compose_base_cmd }} --user www-data app php -f cron.php"
 
 # public domain of the server
 nginx_domain_name: 

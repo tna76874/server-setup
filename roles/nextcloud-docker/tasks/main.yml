@@ -146,7 +146,7 @@
     name: nextcloud cronjob
     minute: '*/15'
     user: root
-    job: "{{ docker_php_cmd }} > /dev/null 2>&1"
+    job: " ( {{ docker_php_cmd }} > /dev/null 2>&1 ) "
     cron_file: nextcloud_cron
 
 - name: Ensure backup cron job
