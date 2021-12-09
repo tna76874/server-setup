@@ -1,3 +1,9 @@
 upload_max_filesize = {{ upload_limit|default(nc_config_php_upload_limit) }}
 post_max_size = {{ upload_limit|default(nc_config_php_upload_limit) }}
 max_execution_time = {{ nc_config_php_max_execution_time }}
+
+pm.max_children = 300
+pm.process_idle_timeout = 300s
+pm.max_requests = 500
+memory_limit = {{ nc_config_php_memory_limit }}
+pm = ondemand
