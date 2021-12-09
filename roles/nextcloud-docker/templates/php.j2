@@ -7,3 +7,10 @@ pm.process_idle_timeout = 300s
 pm.max_requests = 500
 memory_limit = {{ nc_config_php_memory_limit }}
 pm = ondemand
+
+opcache.enable=1
+opcache.interned_strings_buffer=8
+opcache.max_accelerated_files=10000
+opcache.memory_consumption=128
+opcache.save_comments=1
+opcache.revalidate_freq=1
