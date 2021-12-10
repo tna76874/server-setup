@@ -38,6 +38,7 @@ compose_config_nc_admin_pw: "{{ lookup('password', '/dev/null length=32 chars=as
 
 nc_config_trusted_proxy: "{{ hostvars[inventory_hostname]['ansible_default_ipv4']['address'] }}"
 online_office: 'collabora'
+nc_config_office: false
 fulltextsearch_enabled: false
 
 enable_calbackup: true

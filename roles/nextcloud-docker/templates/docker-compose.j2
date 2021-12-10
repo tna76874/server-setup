@@ -25,6 +25,8 @@ services:
     volumes:
       - ./data/nextcloud:/var/www/html
       - ./data/nextcloud/data:/var/www/html/data
+      - ./data/config/nextcloud.ini:/usr/local/etc/php/conf.d/nextcloud.ini
+      - ./data/config/www.conf:/usr/local/etc/php-fpm.d/www.conf
 {% for vol in compose_extra_volumes %}
       - {{ vol.host }}:{{ vol.container }}{{ vol.mode }}
 {% endfor %}

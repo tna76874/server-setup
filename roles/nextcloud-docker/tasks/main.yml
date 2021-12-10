@@ -19,6 +19,7 @@
     - { path: "{{ project_root }}/data/nginx", owner: "{{ server_user }}", r: "no" }
     - { path: "{{ project_root }}/data/nextcloud", owner: "www-data", r: "no" }
     - { path: "{{ nextcloud_database_dump_dir }}", owner: "{{ server_user }}", r: "no" }
+    - { path: "{{ project_root }}/data/config", owner: "root", r: "no" }
 
 - name: Ensure nginx.conf
   get_url:
@@ -48,6 +49,21 @@
   become: yes
   loop:
     - { file: "docker-compose.j2", destination: "{{ project_root }}/docker-compose.yml", owner: "{{ server_user }}", mode: "0755" }
+    - { file: "php.j2", destination: "{{ project_root }}/data/config/nextcloud.ini", owner: "root", mode: "0644" }
+    - { file: "www.conf.j2", destination: "{{ project_root }}/data/config/www.conf", owner: "root", mode: "0644" }
+  notify:
+    - compose down
+    - compose up
+
+- name: Ensure uploadsize in {{ nextcloud_www_dir }}/config
+  template:
+    src:  "{{ item.src }}"
+    dest: "{{ item.dest }}"
+    owner: "{{ item.owner }}"
+    group: "{{ item.owner }}"
+    mode: 0644
+  loop:
+    - {src: "uploadsize.j2", dest: "{{ project_root }}/data/nginx/uploadsize.conf", owner: "{{ 82 if ( 'alpine' in tag_nextcloud ) else 33 }}"}
   notify:
     - compose down
     - compose up
@@ -62,20 +78,6 @@
 - name: Flush handlers
   meta: flush_handlers
 
-- name: Ensure php.ini in {{ nextcloud_www_dir }}/config
-  template:
-    src:  "{{ item.src }}"
-    dest: "{{ item.dest }}"
-    owner: "{{ item.owner }}"
-    group: "{{ item.owner }}"
-    mode: 0644
-  loop:
-    - {src: "php.j2", dest: "{{ nextcloud_www_dir }}/config/php.ini", owner: "{{ 82 if ( 'alpine' in tag_nextcloud ) else 33 }}"}
-    - {src: "uploadsize.j2", dest: "{{ project_root }}/data/nginx/uploadsize.conf", owner: "{{ 82 if ( 'alpine' in tag_nextcloud ) else 33 }}"}
-  notify:
-    - compose down
-    - compose up
-
 - name: Ensure Permissions
   shell: "{{ compose_base_cmd }} app chown -R www-data:www-data /var/www/html/{{ item }}"
   changed_when: false
@@ -85,6 +87,7 @@
     - "config"
     - "apps"
     - "custom_apps"
+  when: force_nextcloud_config|default(false)
 
 - name: Configure nextcloud 
   block:
@@ -163,6 +166,7 @@
 
 - name: run nextcloud cronjob once
   shell: '{{ docker_php_cmd }} > /dev/null 2>&1'
+  when: force_nextcloud_config|default(false)
 
 - name: setup collabora app in nextcloud
   include_tasks: configure_collabora.yml
@@ -170,6 +174,7 @@
     - online_office == 'collabora'
     - force_nextcloud_config|default(false)
     - ansible_architecture == 'x86_64'
+    - nc_config_office|bool
 
 - name: setup onlyoffice app in nextcloud
   include_tasks: configure_onlyoffice.yml
@@ -177,6 +182,7 @@
     - online_office == 'onlyoffice'
     - force_nextcloud_config|default(false)
     - ansible_architecture == 'x86_64'
+    - nc_config_office|bool
 
 - name: setup fulltextsearch app in nextcloud
   include_tasks: fulltextsearch.yml
