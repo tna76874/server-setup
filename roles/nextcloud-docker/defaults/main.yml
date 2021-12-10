@@ -68,6 +68,8 @@ nc_config_php_upload_limit: '512M'
 nc_config_php_memory_limit: '512M'
 nc_config_php_max_execution_time: '7000'
 
+nc_config_opcache: true
+
 # env
 nc_config_collabora_url: "https://{{ nginx_domain_name }}:443"
 

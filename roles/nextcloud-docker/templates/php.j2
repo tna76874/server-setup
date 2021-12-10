@@ -2,3 +2,12 @@ upload_max_filesize = {{ upload_limit|default(nc_config_php_upload_limit) }}
 post_max_size = {{ upload_limit|default(nc_config_php_upload_limit) }}
 max_execution_time = {{ nc_config_php_max_execution_time }}
 memory_limit={{ nc_config_php_memory_limit }}
+{% if nc_config_opcache|bool %}
+opcache.enable=1
+opcache.enable_cli=1
+opcache.interned_strings_buffer=8
+opcache.max_accelerated_files=10000
+opcache.memory_consumption=128
+opcache.save_comments=1
+opcache.revalidate_freq=1
+{% endif %}
