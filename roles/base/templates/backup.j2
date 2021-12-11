@@ -7,7 +7,7 @@ ENVFILE="$RESTICDIR/env"
 
 export LOOPMAX=10
 export SLEEP_TIME=10
-export RESTIC_EXE="/snap/bin/restic"
+export RESTIC_EXE="{{ config_restic_path }}"
 export PRUNE_CONFIG="--keep-daily 7 --keep-weekly 5 --keep-monthly 12 --keep-yearly 75"
 
 mkdir -p "$RESTICDIR"

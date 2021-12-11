@@ -1,2 +1,4 @@
 ---
 config_update_dist: true
+
+config_restic_path: '/snap/bin/restic'
