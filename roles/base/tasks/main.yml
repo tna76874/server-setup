@@ -67,6 +67,7 @@
 - name: Update dist
   apt:
     upgrade: dist
+  when: config_update_dist|bool
 
 - name: Ensure clean motd
   file:
