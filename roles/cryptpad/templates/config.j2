@@ -35,7 +35,7 @@ module.exports = {
 {% endif %}
     maxUploadSize: {{ config_max_upload_mb|int * 1024 * 1024 }},
     premiumUploadSize: {{ config_max_upload_mb|int * 1024 * 1024 }},
-    defaultStorageLimit: {{ config_storage_limit }},
+    defaultStorageLimit: {{ config_storage_limit|int * 1024 * 1024 }},
     /* =====================
      *   DATABASE VOLUMES
      * ===================== */
