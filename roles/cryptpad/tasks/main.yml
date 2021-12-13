@@ -60,7 +60,7 @@
   loop:
     - { file: "env.j2", destination: "{{ project_root }}/.env", owner: "{{ server_user }}", mode: "0644", force: yes }
     - { file: "docker-compose.j2", destination: "{{ project_root }}/docker-compose.yml", owner: "{{ server_user }}", mode: "0644", force: yes }
-    - { file: "config.j2", destination: "{{ project_root }}/data/config/config.js", owner: "{{ server_user }}", mode: "0644", force: yes }
+    - { file: "config.j2", destination: "{{ project_root }}/data/config/config.js", owner: "4001", mode: "0664", force: yes }
   notify:
     - compose down
     - compose up
