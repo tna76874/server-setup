@@ -36,6 +36,10 @@ services:
 {% for envs in compose_config_env %}
       - {{ envs.var }}={{ envs.val }}
 {% endfor %}
+    ulimits:
+      nofile:
+        soft: 1000000
+        hard: 1000000
 
   web:
     image: nginx:{{ tag_nginx }}
@@ -47,6 +51,10 @@ services:
       - ./data/nginx/uploadsize.conf:/etc/nginx/conf.d/uploadsize.conf:ro
     volumes_from:
       - app
+    ulimits:
+      nofile:
+        soft: 1000000
+        hard: 1000000
 
 {% if enable_calbackup|bool %}
   nextcloud-nc-backup:
