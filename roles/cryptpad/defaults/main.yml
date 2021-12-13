@@ -15,5 +15,13 @@ docker_config_project: cryptpad
 start_compose: true
 # tcp port
 config_tcp: 8293
-# admin email
+# cryptpad configs
 config_admin_mail: i.did.not.read.my.config@cryptpad.fr
+config_maxWorkers: '4'
+config_admin_keys: []
+config_inactive_days: '90'
+config_retention_days: '15'
+config_account_retention_days: '0'
+config_max_upload_mb: '100'
+config_storage_limit: '500'
+config_log_level: 'warn'
