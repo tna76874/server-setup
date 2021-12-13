@@ -1,6 +1,8 @@
 ---
 # docker image tags
-tag_nextcloud: '22.2.0-fpm-alpine'
+### If tag_nextcloud will be left EMPTY, the latest release will be curled from docker hub and used.
+tag_nextcloud: '23.0.0-fpm-alpine'
+###
 tag_redis: '6.2.6'
 tag_mariadb: '10.5'
 tag_nginx: 'latest'
