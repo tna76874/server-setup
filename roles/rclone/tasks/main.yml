@@ -36,6 +36,7 @@
   become: yes
   loop:
     - { file: "rclone_docker.j2", destination: "/usr/local/bin/rclone_docker", owner: "root", mode: "0750" }
+    - { file: "rclone_docker_config.j2", destination: "/usr/local/bin/rclone_docker_config", owner: "root", mode: "0750" }
     - { file: "rclone_docker_sync.j2", destination: "/usr/local/bin/rclone_docker_sync", owner: "root", mode: "0750" }
   notify:
     - docker pull
