@@ -1,0 +1,34 @@
+---
+# docker image tags
+### If tag_rclone will be left EMPTY, the latest release will be curled from docker hub and used.
+tag_rclone: '1.57.0'
+###
+
+# ensure docker-compose gets restarted on every run
+restart_compose: false
+# docker-compose project name
+docker_config_project: rclone
+# start docker by default
+start_compose: false
+# running user
+server_user: root
+# project root
+project_root: "/srv/{{ docker_config_project }}"
+rclone_config_dir: "{{ project_root }}/data/config"
+rclone_data_dir: "{{ project_root }}/data/data"
+
+docker_executable: "/usr/bin/docker"
+
+# Docker-compose configs
+compose_volumes:
+  - { host: "{{ rclone_config_dir }}", container: "/config/rclone", mode: "" }
+  - { host: "{{ rclone_data_dir }}", container: "/data", mode: ":shared" } 
+
+compose_extra_volumes: []
+  # - { host: "./data/test", container: "/test", mode: ":ro" }
+
+rclone_jobs: []
+  # - "copy myfolder:/mymount ./localfolder"
+
+config_cron_enabled: false
+config_rclone_cron: { month: "*", day: "*", hour: "2", minute: "0" }

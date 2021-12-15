@@ -1,0 +1,11 @@
+#!/bin/bash
+{{ docker_executable }} run --rm -it \
+{% for vol in compose_volumes %}
+      --volume {{ vol.host }}:{{ vol.container }}{{ vol.mode }} \
+{% endfor %}
+{% for vol in compose_extra_volumes %}
+      --volume {{ vol.host }}:{{ vol.container }}{{ vol.mode }} \
+{% endfor %}
+      --user $(id -u):$(id -g) \
+      rclone/rclone:{{ tag_rclone }} \
+      "$@"

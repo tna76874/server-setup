@@ -1,0 +1,7 @@
+#!/bin/bash
+
+# run indivudual jobs
+{% for job in rclone_jobs %}
+( /usr/local/bin/rclone_docker {{ job }} ) &
+{% endfor %}
+wait

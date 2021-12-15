@@ -1,0 +1,16 @@
+---
+- name: init env
+  template:
+    src: "{{ item.file }}"
+    dest: "{{ item.destination }}"
+    owner: "{{ item.owner }}"
+    group: "{{ item.owner }}"
+    mode: "{{ item.mode }}"
+  become: yes
+  loop:
+    - { file: "env.j2", destination: "{{ project_root }}/.env", owner: "{{ server_user }}", mode: "0755" }
+  notify:
+    - docker pull
+
+- name: docker pull
+  ansible.builtin.shell: "{{ docker_executable }} pull rclone/rclone:{{ tag_rclone }}"
