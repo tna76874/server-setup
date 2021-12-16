@@ -1,0 +1,34 @@
+---
+# docker image tags
+### If tag_rclone will be left EMPTY, the latest release will be curled from docker hub and used.
+base_image: 'python'
+tag_base_image: '3.7.7'
+###
+
+# docker project name
+docker_config_project: envelope
+# start docker by default
+start_compose: false
+# running user
+server_user: root
+# project root
+project_root: "/srv/{{ docker_config_project }}"
+project_config_dir: "/srv/{{ docker_config_project }}/config"
+
+docker_executable: "/usr/bin/docker"
+
+# mail config
+
+config_mail_user: 
+config_mail_password: 
+config_mail_host: 
+config_mail_port: '587'
+config_mail_security: 'starttls'
+
+# Volume configs
+compose_volumes:
+  - { host: "{{ project_config_dir }}", container: "/config", mode: ":ro" }
+
+compose_extra_volumes: []
+  # - { host: "./data/test", container: "/test", mode: ":ro" }
+

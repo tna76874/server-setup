@@ -1,0 +1,37 @@
+---
+- name: Check .env file
+  stat: 
+    path: "{{ project_root }}/.env"
+  register: env_file
+  changed_when: not env_file.stat.exists
+  notify:
+    - init env
+
+- name: Ensure directories
+  file:
+    path: "{{ item.path }}"
+    owner: "{{ item.owner }}"
+    state: directory
+    recurse: "{{ item.r }}"
+  loop:
+    - { path: "{{ project_root }}", owner: "{{ server_user }}", r: "no" }
+    - { path: "{{ project_config_dir }}", owner: "{{ server_user }}", r: "no" }
+
+- name: Ensure templates
+  template:
+    src: "{{ item.file }}"
+    dest: "{{ item.destination }}"
+    owner: "{{ item.owner }}"
+    mode: "{{ item.mode }}"
+  become: yes
+  loop:
+    - { file: "config.j2", destination: "{{ project_config_dir }}/config.ini", owner: "root", mode: "0750" }
+    - { file: "Dockerfile.j2", destination: "{{ project_root }}/Dockerfile", owner: "root", mode: "0750" }
+    - { file: "requirements.j2", destination: "{{ project_root }}/requirements.txt", owner: "root", mode: "0750" }
+    - { file: "envelope_docker.j2", destination: "/usr/local/bin/envelope_docker", owner: "root", mode: "0750" }
+
+  notify:
+    - docker build
+ 
+- name: Flush handlers
+  meta: flush_handlers

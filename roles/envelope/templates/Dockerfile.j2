@@ -1,0 +1,6 @@
+FROM {{ base_image }}:{{ tag_base_image }}
+
+WORKDIR /work
+
+COPY requirements.txt ./
+RUN pip install --no-cache-dir -r requirements.txt
