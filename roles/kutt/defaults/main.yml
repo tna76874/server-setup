@@ -1,0 +1,101 @@
+---
+# docker image tags
+### If tag_kutt will be left EMPTY, the latest release will be curled from docker hub and used.
+tag_kutt: 'v2.7.3'
+tag_redis: '6.0-alpine'
+tag_postgres: '12-alpine'
+
+# ensure docker-compose gets restarted on every run
+restart_compose: false
+restart_policy: 'always'
+# docker-compose project name
+docker_config_project: kutt
+# start docker by default
+start_compose: true
+# running user
+server_user: root
+# project root
+project_root: "/srv/{{ docker_config_project }}"
+config_redis_dir: "/srv/{{ docker_config_project }}/data/redis"
+config_postgres_dir: "/srv/{{ docker_config_project }/data/postgres"
+
+compose_executable: "/usr/local/bin/docker-compose"
+compose_base_cmd: "{{ compose_executable }} -f {{ project_root }}/docker-compose.yml exec -T"
+
+# public domain of the server
+nginx_domain_name: 
+
+# Docker-compose configs
+compose_config_startup: always
+compose_config_postgres_pw: "{{ lookup('password', '/dev/null length=32 chars=ascii_letters,digits') }}"
+compose_config_jwt_pw: "{{ lookup('password', '/dev/null length=32 chars=ascii_letters,digits') }}"
+
+# Database
+kutt_db_type: 'mysql'
+kutt_db_host: 'postgres'
+kutt_db_name: 'kutt'
+kutt_db_user: 'kuttuser'
+kutt_db_passwd: "{{ compose_config_postgres_pw }}"
+
+# Config
+kutt_config_link_length: '6'
+kutt_config_disallow_reg: "'true'"
+kutt_config_disable_anon: "'true'"
+kutt_config_daily_limit: '50'
+kutt_config_cooldown_min: '5'
+kutt_config_max_stats: '5000'
+kutt_config_domain_ssl: "'false'"
+kutt_config_admin_emails: []
+  # - 'admin@domain.xyz'
+kutt_config_report_email: "{{ kutt_config_admin_emails[0] }}"
+kutt_config_contact_email: "{{ kutt_config_admin_emails[0] }}"
+kutt_config_site_name: 'Kutt'
+kutt_config_default_domain: "{{ nginx_domain_name }}"
+
+email_config_host: 
+email_config_port:
+email_config_secure: "'true'"
+email_config_user: 
+email_config_from:
+email_config_password: 
+
+compose_config_tcp_port: "2352"
+compose_config_env_kutt:
+  - { var: "DB_HOST", val: "{{ kutt_db_host }}" }
+  - { var: "DB_PORT", val: "5432" }
+  - { var: "DB_NAME", val: "{{ kutt_db_name }}" }
+  - { var: "DB_USER", val: "{{ kutt_db_user }}" }
+  - { var: "DB_PASSWORD", val: "{% raw %}${DB_PASSWORD}{% endraw %}" }
+  - { var: "DB_SSL", val: "'false'" }
+  - { var: "REDIS_HOST", val: "redis" }
+  - { var: "REDIS_PORT", val: "6379" }
+  # Config
+  - { var: "SITE_NAME", val: "{{ kutt_config_site_name }}" }
+  - { var: "DEFAULT_DOMAIN", val: "{{ kutt_config_default_domain }}" }
+  - { var: "PORT", val: "3000" }
+  - { var: "LINK_LENGTH", val: "{{ kutt_config_link_length }}" }
+  - { var: "DISALLOW_REGISTRATION", val: "{{ kutt_config_disallow_reg }}" }
+  - { var: "DISALLOW_ANONYMOUS_LINKS", val: "{{ kutt_config_disable_anon }}" }
+  - { var: "USER_LIMIT_PER_DAY", val: "{{ kutt_config_daily_limit }}" }
+  - { var: "NON_USER_COOLDOWN", val: "{{ kutt_config_cooldown_min }}" }
+  - { var: "DEFAULT_MAX_STATS_PER_LINK", val: "{{ kutt_config_max_stats }}" }
+  - { var: "CUSTOM_DOMAIN_USE_HTTPS", val: "{{ kutt_config_domain_ssl }}" }
+  - { var: "JWT_SECRET", val: "{% raw %}${JWT_SECRET}{% endraw %}" }
+  - { var: "ADMIN_EMAILS", val: "{{ ','.join(kutt_config_admin_emails) }}" }
+  - { var: "REPORT_EMAIL", val: "{{ kutt_config_report_email }}" }
+  - { var: "CONTACT_EMAIL", val: "{{ kutt_config_contact_email }}" }
+  # Email
+  - { var: "MAIL_HOST", val: "{{ email_config_host }}" }
+  - { var: "MAIL_PORT", val: "{{ email_config_port }}" }
+  - { var: "MAIL_SECURE", val: "{{ email_config_secure }}" }
+  - { var: "MAIL_USER", val: "{{ email_config_user }}" }
+  - { var: "MAIL_FROM", val: "{{ email_config_from }}" }
+  - { var: "MAIL_PASSWORD", val: "{{ email_config_password }}" }
+
+compose_config_env_postgres:
+  - { var: "POSTGRES_DB", val: "{{ kutt_db_name }}" }
+  - { var: "POSTGRES_USER", val: "{{ kutt_db_user }}" }
+  - { var: "POSTGRES_PASSWORD", val: "{% raw %}${DB_PASSWORD}{% endraw %}" }
+
+
+  

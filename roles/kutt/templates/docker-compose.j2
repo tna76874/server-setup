@@ -1,0 +1,32 @@
+version: "3"
+
+services:
+  kutt:
+    image: kutt/kutt:{{ tag_kutt }}
+    restart: {{ restart_policy }}
+    depends_on:
+      - postgres
+      - redis
+    command: ["./wait-for-it.sh", "postgres:5432", "--", "npm", "start"]
+    ports:
+      - "127.0.0.1:{{ compose_config_tcp_port }}:3000"
+    environment:
+{% for envs in compose_config_env_kutt %}
+      {{ envs.var }}: {{ envs.val }}
+{% endfor %}
+
+  redis:
+    image: redis:{{ tag_redis }}
+    restart: {{ restart_policy }}
+    volumes:
+      - ./data/redis:/data
+
+  postgres:
+    image: postgres:{{ tag_postgres }}
+    restart: {{ restart_policy }}
+    environment:
+{% for envs in compose_config_env_postgres %}
+      {{ envs.var }}: {{ envs.val }}
+{% endfor %}
+    volumes:
+      - ./data/postgres:/var/lib/postgresql/data
