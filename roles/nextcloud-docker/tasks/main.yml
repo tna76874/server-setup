@@ -6,6 +6,7 @@
   changed_when: not env_file.stat.exists
   notify:
     - init env
+    - wait for nextcloud
     - first setup nextcloud
 
 - name: Query latest docker nextcloud release
