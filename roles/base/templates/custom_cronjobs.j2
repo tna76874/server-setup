@@ -1,0 +1,9 @@
+#!/bin/bash
+
+{% if (job_list != []) %}
+# run indivudual backup jobs
+{% for job in job_list %}
+( {{ job }} ) &
+{% endfor %}
+wait
+{% endif %}

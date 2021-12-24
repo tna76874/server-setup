@@ -116,6 +116,7 @@
   loop:
     - { file: "backup.j2", destination: "/usr/local/bin/backup", owner: "root", mode: "0755" }
     - { file: "dockerexport.j2", destination: "/usr/local/bin/dockerexport.sh", owner: "root", mode: "0750" }
+    - { file: "custom_cronjobs.j2", destination: "/usr/local/bin/custom_cronjobs", owner: "root", mode: "0750" }
 
 - name: Register timezone
   set_fact: time_zone="Europe/Berlin"
@@ -125,3 +126,15 @@
   timezone:
     name: "{{ time_zone }}"
   notify: restart cron
+
+- name: Ensure custom cron jobs
+  cron:
+    name: nextcloud backup
+    minute: "{{ config_cron_job.minute }}"
+    hour:   "{{ config_cron_job.hour }}"
+    day:  "{{ config_cron_job.day }}"
+    month: "{{ config_cron_job.month }}"
+    user: root
+    job: "/usr/local/bin/custom_cronjobs > /dev/null 2>&1"
+    cron_file: custom_cron_jobs
+    state: "{% if (job_list != []) %}present{% else %}absent{% endif %}"
