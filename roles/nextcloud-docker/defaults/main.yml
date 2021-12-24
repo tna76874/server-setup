@@ -48,6 +48,8 @@ enable_calbackup: true
 compose_extra_volumes: []
   # - { host: "./data/test", container: "/test", mode: ":ro" } 
 
+nextcloud_admin: 'admin'
+
 # Database
 
 nextcloud_db_type: 'mysql'
