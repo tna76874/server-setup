@@ -27,7 +27,7 @@ nextcloud.mysqldump > my-old-nextcloud.sql
 docker-compose up -d
 sleep 10
 # import database dump
-docker exec -i nextcloud_db_1 mysql -unextcloud -p${MYSQL_PASSWORD] nextcloud < my-old-nextcloud.sql
+docker exec -i nextcloud_db_1 mysql -unextcloud -p${MYSQL_PASSWORD} nextcloud < my-old-nextcloud.sql
 docker-compose down
 rm my-old-nextcloud.sql
 
