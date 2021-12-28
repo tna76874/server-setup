@@ -1,0 +1,38 @@
+#!/bin/bash
+echo -e "Helper script to migrate from snap to docker nextcloud install. ENSURE TO HAVE 2/3 OF TOTAL DISK SPACE AVAILIBLE"
+source {{ project_root }}/.env
+
+# enable snap maintenance mode
+nextcloud.occ maintenance:mode --on
+
+# ensure docker nextcloud is stopped
+cd {{ project_root }}
+docker-compose down
+
+# sync nextcloud data
+rsync -avzhs -P --partial --stats --delete --no-owner --no-group {{ nextcloud_snap_path }}/common/nextcloud/data/ {{ project_root }}/data/nextcloud/data/
+# sync nextcloud extra apps
+mkdir -p {{ project_root }}/data/nextcloud/custom_apps/
+rsync -avzhs -P --partial --stats --delete --no-owner --no-group {{ nextcloud_snap_path }}/current/nextcloud/extra-apps/ {{ project_root }}/data/nextcloud/custom_apps/
+# copy snap config.php
+cp {{ nextcloud_snap_path }}/current/nextcloud/config/config.php {{ project_root }}/snap_config.php
+
+# Ensure permissions
+chown -R www-data:www-data {{ project_root }}/data/nextcloud/data
+chown -R www-data:www-data {{ project_root }}/data/nextcloud/config
+
+# Get snap database dump
+cd {{ project_root }}
+nextcloud.mysqldump > my-old-nextcloud.sql
+docker-compose up -d
+sleep 10
+# import database dump
+docker exec -i nextcloud_db_1 mysql -unextcloud -p${MYSQL_PASSWORD] nextcloud < my-old-nextcloud.sql
+docker-compose down
+rm my-old-nextcloud.sql
+
+echo -e "Inspect {{ project_root }}/snap_config.php and fill up {{ project_root }}/data/nextcloud/config/config.php with db credentials/sessions and salt keys."
+echo -e ""
+echo -e "If docker nextcloud works fine, purge snap nextcloud from system."
+echo -e "sudo snap remove --purge nextcloud"
+echo -e "rm -rf {{ nextcloud_snap_path }}"

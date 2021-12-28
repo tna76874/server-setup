@@ -1,15 +1,22 @@
 ---
+# select 'fpm-alpine' (recommended) or 'apache'.
+nextcloud_installation_family: 'fpm-alpine'
+
 # docker image tags
 ### If tag_nextcloud will be left EMPTY, the latest release will be curled from docker hub and used.
-tag_nextcloud: '23.0.0-fpm-alpine'
-###
+nextcloud_version: '23.0.0'
+tag_nextcloud: "{{ nextcloud_version|default('23.0.0') }}-{{ nextcloud_installation_family }}"
+
+### other tags (the latest tag for nginx will always be pulled)
 tag_redis: '6.2.6'
 tag_mariadb: '10.5'
-tag_nginx: 'latest'
 tag_calbackup: 'latest'
 
 # nginx fpm config
 config_nginx_fpm: "https://raw.githubusercontent.com/nextcloud/docker/master/.examples/docker-compose/with-nginx-proxy/mariadb/fpm/web/nginx.conf"
+
+# nextcloud snap installation path
+nextcloud_snap_path: '/var/snap/nextcloud'
 
 # ensure docker-compose gets restarted on every run
 restart_compose: false

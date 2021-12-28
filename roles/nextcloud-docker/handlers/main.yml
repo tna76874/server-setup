@@ -39,3 +39,7 @@
   shell: >
     sleep 1m; {{ docker_occ_cmd }} maintenance:install --admin-user {{ nextcloud_admin }} --admin-pass {{ compose_config_nc_admin_pw }} --data-dir {{ nextcloud_container_data_dir }}
   failed_when: False
+
+- name: snap warning
+  debug:
+      msg: "Nextcloud files from a snap installation are found on your system. It is recommended to migrate to docker with the supported migration script and purge the snap installation from your system."

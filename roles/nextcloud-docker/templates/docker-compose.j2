@@ -16,6 +16,7 @@ services:
     volumes:
       - ./data/redis:/var/lib/redis
 
+{% if (nextcloud_installation_family=='fpm-alpine') %}
   app:
     image: nextcloud:{{ tag_nextcloud }}
     restart: always
@@ -55,13 +56,45 @@ services:
       nofile:
         soft: 1000000
         hard: 1000000
+{% elif (nextcloud_installation_family=='apache') %}
+  app:
+    image: nextcloud:{{ tag_nextcloud }}
+    restart: always
+    depends_on:
+      - db
+      - redis
+    ports:
+      - 127.0.0.1:{{ compose_config_tcp_port }}:80
+    volumes:
+      - ./data/nextcloud:/var/www/html
+      - ./data/nextcloud/data:/var/www/html/data
+      - ./data/config/nextcloud.ini:/usr/local/etc/php/conf.d/nextcloud.ini
+      - ./data/config/www.conf:/usr/local/etc/php-fpm.d/www.conf
+{% for vol in compose_extra_volumes %}
+      - {{ vol.host }}:{{ vol.container }}{{ vol.mode }}
+{% endfor %}
+    env_file:
+      - ./.env
+    environment:
+{% for envs in compose_config_env %}
+      - {{ envs.var }}={{ envs.val }}
+{% endfor %}
+    ulimits:
+      nofile:
+        soft: 1000000
+        hard: 1000000
+{% endif %}
 
 {% if enable_calbackup|bool %}
   nextcloud-nc-backup:
     image: waja/calcardbackup:{{ tag_calbackup }}
     links:
       - db:nextcloud-db
+{% if (nextcloud_installation_family=='fpm-alpine') %}
       - web:nextcloud
+{% else %}
+      - app:nextcloud
+{% endif %}
     environment:
       - CRON_TIME=5 4 * * *
       - INIT_BACKUP=yes
@@ -72,7 +105,11 @@ services:
       - DB_HOST=db
     depends_on:
       - db
+{% if (nextcloud_installation_family=='fpm-alpine') %}
       - web
+{% else %}
+      - app
+{% endif %}
     restart: unless-stopped
     volumes:
       - ./data/calbackup:/backup

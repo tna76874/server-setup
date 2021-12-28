@@ -9,16 +9,34 @@
     - wait for nextcloud
     - first setup nextcloud
 
+- name: Check if nextcloud snap installation is present
+  stat: 
+    path: "{{ nextcloud_snap_path }}"
+  register: nextcloud_snap_installation
+  changed_when: nextcloud_snap_installation.stat.exists
+  notify:
+    - snap warning
+
 - name: Query latest docker nextcloud release
-  shell: "wget -q https://registry.hub.docker.com/v1/repositories/nextcloud/tags -O - | sed -e 's/[][]//g' -e 's/\"//g' -e 's/ //g' | tr '}' '\n'  | awk -F: '{print $3}' | awk '/^[2-9][2-9].[0-9].[0-9]-fpm-alpine/{print}'"
-  register: tag_nextcloud_query
+  shell: "wget -q https://registry.hub.docker.com/v1/repositories/nextcloud/tags -O - | sed -e 's/[][]//g' -e 's/\"//g' -e 's/ //g' | tr '}' '\n'  | awk -F: '{print $3}' | awk '/^[2-9][2-9].[0-9].[0-9]$/{print}'"
+  register: nextcloud_version_query
 
-- name: Registering release tag
+- name: Query latest docker nginx release
+  shell: "wget -q https://registry.hub.docker.com/v1/repositories/nginx/tags -O - | sed -e 's/[][]//g' -e 's/\"//g' -e 's/ //g' | tr '}' '\n'  | awk -F: '{print $3}' | awk '/^[1-9].[0-9][0-9].[0-99]$/{print}'"
+  register: nginx_version_query
+
+- name: Registering release tags for nextcloud
   set_fact:
-    tag_nextcloud: "{{ tag_nextcloud_query.stdout_lines[-1] }}"
-  when: tag_nextcloud == None
+    nextcloud_version: "{{ nextcloud_version_query.stdout_lines[-1] }}"
+    tag_nextcloud: "{{ nextcloud_version_query.stdout_lines[-1] }}-{{ nextcloud_installation_family }}"
+  when: (nextcloud_version == None) or (tag_nextcloud == None)
 
-- name: Ensure directories
+- name: Registering release tags for nginx
+  set_fact:
+    nginx_version: "{{ nginx_version_query.stdout_lines[-1] }}"
+    tag_nginx: "{{ nginx_version_query.stdout_lines[-1] }}"
+
+- name: Ensure directories-fpm-alpine
   file:
     path: "{{ item.path }}"
     owner: "{{ item.owner }}"
@@ -31,7 +49,7 @@
     - { path: "{{ nextcloud_database_dump_dir }}", owner: "{{ server_user }}", r: "no" }
     - { path: "{{ project_root }}/data/config", owner: "root", r: "no" }
 
-- name: Ensure nginx.conf
+- name: Ensure fpm nginx.conf
   get_url:
     url: "{{ config_nginx_fpm }}"
     dest: "{{ project_root }}/data/nginx/nginx.conf"
@@ -93,10 +111,6 @@
   changed_when: false
   loop:
     - ""
-    - "data"
-    - "config"
-    - "apps"
-    - "custom_apps"
   when: force_nextcloud_config|default(false)
 
 - name: Configure nextcloud 
@@ -144,6 +158,17 @@
     - { file: "nextcloud_docker_occ.j2", destination: "/usr/local/bin/nextcloud_docker_occ", owner: "root", mode: "0750" }
     - { file: "nextcloud_backup.j2", destination: "/usr/local/bin/nextcloud_backup", owner: "root", mode: "0750" }
     - { file: "nextcloud_maintenance.j2", destination: "/usr/local/bin/nextcloud_maintenance", owner: "root", mode: "0750" }
+
+- name: Ensure snap migration script
+  template:
+    src: "{{ item.file }}"
+    dest: "{{ item.destination }}"
+    owner: "{{ item.owner }}"
+    mode: "{{ item.mode }}"
+  become: yes
+  loop:
+    - { file: "nextcloud_migrate_snap_to_docker.j2", destination: "{{ project_root }}/nextcloud_migrate_snap_to_docker.sh", owner: "root", mode: "0750" }
+  when: nextcloud_snap_installation.stat.exists
  
 - name: optimize nextcloud cronjob
   cron:
