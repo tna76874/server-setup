@@ -61,7 +61,11 @@
     state: present
   with_items: '{{ sudo_users.stdout_lines }}'
 
-- name: Prune unused docker images
-  shell: 'docker image prune -a --force'
-  become: yes
+- name: Prune docker stuff
+  community.docker.docker_prune:
+    containers: yes
+    images: yes
+    networks: no
+    volumes: no
+    builder_cache: yes
   when: docker_prune_images|bool
