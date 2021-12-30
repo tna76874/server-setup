@@ -225,3 +225,7 @@
     - fulltextsearch_enabled|bool
     - force_nextcloud_config|default(false)
     - ansible_architecture == 'x86_64'
+    
+- name: custom theme
+  include_tasks: theme.yml
+  when: nextcloud_custom_theme is defined
