@@ -170,5 +170,6 @@ nextcloud_app_config:
   - {name: "sharebymail", state: "enable"}
   - {name: "registration", state: "enable"}
 
+# Theming
 
-  
+nextcloud_custom_theme: 

@@ -6,9 +6,10 @@
     owner: "{{ 82 if ( 'alpine' in tag_nextcloud ) else 33 }}"
     group: "{{ 82 if ( 'alpine' in tag_nextcloud ) else 33 }}"
     mode: '0755'
+  when: nextcloud_custom_theme != None
 
 - name: Enable theme in config
   shell: "{{ docker_occ_cmd }} {{ item }}"
   loop:
-    - "config:system:set theme --value='{{ nextcloud_custom_theme }}'"
-    - "app:disable theming"
+    - "config:system:{{ 'set theme --value='+nextcloud_custom_theme  if ( nextcloud_custom_theme != None ) else 'delete theme' }}"
+    - "app:{{ 'disable' if ( nextcloud_custom_theme != None ) else 'enable' }} theming"
