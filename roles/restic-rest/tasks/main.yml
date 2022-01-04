@@ -46,7 +46,6 @@
   become: yes
   loop:
     - { file: "docker-compose.j2", destination: "{{ project_root }}/docker-compose.yml", owner: "{{ server_user }}", mode: "0755" }
-    - { file: "backup.j2", destination: "/usr/local/bin/backup", owner: "root", mode: "0750" }
   when: not config_reverse_proxy_frontend|bool
   notify:
     - compose down
