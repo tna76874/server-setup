@@ -18,11 +18,11 @@
     - snap warning
 
 - name: Query latest docker nextcloud release
-  shell: "wget -q https://registry.hub.docker.com/v1/repositories/nextcloud/tags -O - | sed -e 's/[][]//g' -e 's/\"//g' -e 's/ //g' | tr '}' '\n'  | awk -F: '{print $3}' | awk '/^[2-9][2-9].[0-9].[0-9]$/{print}'"
+  shell: "wget -q https://registry.hub.docker.com/v1/repositories/nextcloud/tags -O - | sed -e 's/[][]//g' -e 's/\"//g' -e 's/ //g' | tr '}' '\n'  | awk -F: '{print $3}' | awk '/^[2-9][2-9].[0-9].[0-9]$/{print}' | sort -V"
   register: nextcloud_version_query
 
 - name: Query latest docker nginx release
-  shell: "wget -q https://registry.hub.docker.com/v1/repositories/nginx/tags -O - | sed -e 's/[][]//g' -e 's/\"//g' -e 's/ //g' | tr '}' '\n'  | awk -F: '{print $3}' | awk '/^[1-9].[0-9][0-9].[0-99]$/{print}'"
+  shell: "wget -q https://registry.hub.docker.com/v1/repositories/nginx/tags -O - | sed -e 's/[][]//g' -e 's/\"//g' -e 's/ //g' | tr '}' '\n'  | awk -F: '{print $3}' | awk '/^[1-9].[0-9][0-9].[0-99]$/{print}' | sort -V"
   register: nginx_version_query
 
 - name: Registering release tags for nextcloud
