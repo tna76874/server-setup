@@ -69,6 +69,7 @@
     - { file: "env.j2", destination: "{{ project_root }}/.env", owner: "root", mode: "0644" }
     - { file: "docker-compose.j2", destination: "{{ project_root }}/docker-compose.yml", owner: "root", mode: "0644" }
     - { file: "gitea.j2", destination: "/app/gitea/gitea", owner: "git", mode: "0755" }
+    - { file: "gitea.j2", destination: "/usr/local/bin/gitea", owner: "git", mode: "0755" }
   notify:
     - compose down
     - compose up
