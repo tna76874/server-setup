@@ -1,0 +1,25 @@
+---
+# cryptpad release.
+docker_release: 
+# running user
+server_user: root
+# project root
+project_root: /srv/gotify
+# public domain
+nginx_domain_name: 
+# compose restart state
+restart_compose: false
+# docker-compose project name
+docker_config_project: gotify
+# start docker by default
+start_compose: true
+# tcp port
+config_tcp: 4562
+# config
+config_default_pw: "{{ lookup('password', '/dev/null length=32 chars=ascii_letters,digits') }}"
+
+compose_config_env:
+  - { var: "TZ", val: "Europe/Berlin" }
+  - { var: "GOTIFY_SERVER_KEEPALIVEPERIODSECONDS", val: "{{ config_keepalive|default('0') }}" }
+  - { var: "GOTIFY_DEFAULTUSER_NAME", val: "{{ config_default_user|default('pushadmin') }}" }
+  - { var: "GOTIFY_REGISTRATION", val: "{{ config_registration|default('false') }}" }

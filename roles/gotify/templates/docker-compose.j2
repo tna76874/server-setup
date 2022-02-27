@@ -1,0 +1,17 @@
+---
+version: "3"
+
+services:
+  gotify:
+    image: gotify/server:{{ docker_release }}
+    restart: always
+    ports:
+      - "127.0.0.1:{{ config_tcp }}:80"
+    environment:
+{% for envs in compose_config_env %}
+      - {{ envs.var }}={{ envs.val }}
+{% endfor %}
+      - {% raw %}GOTIFY_DEFAULTUSER_PASS=${GOTIFY_DEFAULTUSER_PASS}{% endraw %}
+
+    volumes:
+      - "./data:/app/data"
