@@ -27,11 +27,6 @@
 - name: Flush handlers
   meta: flush_handlers
 
-- name: Get user info
-  getent:
-    database: passwd
-    key: "{{ server_user }}"
-
 - name: Ensure directories
   file:
     path: "{{ item.path }}"
