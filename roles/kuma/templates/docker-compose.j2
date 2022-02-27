@@ -1,0 +1,11 @@
+---
+version: '3.3'
+
+services:
+  uptime-kuma:
+    image: louislam/uptime-kuma:{{ docker_release }}
+    restart: always
+    volumes:
+      - ./data:/app/data
+    ports:
+      - "127.0.0.1:{{ config_tcp }}:3001"

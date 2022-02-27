@@ -1,0 +1,70 @@
+---
+- name: Check .env file
+  stat: 
+    path: "{{ project_root }}/.env"
+  register: env_file
+  changed_when: not env_file.stat.exists
+  notify:
+    - init env
+
+- name: Query latest docker release
+  shell: "wget -q https://registry.hub.docker.com/v1/repositories/louislam/uptime-kuma/tags -O - | sed -e 's/[][]//g' -e 's/\"//g' -e 's/ //g' | tr '}' '\n'  | awk -F: '{print $3}' | awk '/^[0-9].([0-9]{2}|[0.9]).[0-9]$/{print}' | sort -V"
+  register: kuma_version_query
+
+- name: Registering release tag
+  set_fact:
+    docker_release: "{{ kuma_version_query.stdout_lines[-1] }}"
+  when: (docker_release == None)
+
+- name: Check compose file
+  stat: 
+    path: "{{ project_root }}/docker-compose.yml"
+  register: compose_file
+  changed_when: not compose_file.stat.exists
+  notify:
+    - ensure compose down
+
+- name: Flush handlers
+  meta: flush_handlers
+
+- name: Ensure directories
+  file:
+    path: "{{ item.path }}"
+    owner: "{{ item.owner }}"
+    state: directory
+  loop:
+    - { path: "{{ project_root }}", owner: "{{ server_user }}" }
+
+- name: Ensure nginx template
+  template:
+    src: "{{ item.file }}"
+    dest: "{{ item.destination }}"
+    owner: "{{ item.owner }}"
+    mode: "{{ item.mode }}"
+  loop:
+    - { file: "nginx.j2", destination: "/etc/nginx/{{ nginx_domain_name }}.d/nginx.conf", owner: "root", mode: "0644" }
+  become: yes
+  notify:
+    - reload nginx
+
+- name: init templates
+  template:
+    src: "{{ item.file }}"
+    dest: "{{ item.destination }}"
+    owner: "{{ item.owner }}"
+    group: "{{ item.owner }}"
+    mode: "{{ item.mode }}"
+    force: "{{ item.force }}"
+  become: yes
+  loop:
+    - { file: "docker-compose.j2", destination: "{{ project_root }}/docker-compose.yml", owner: "{{ server_user }}", mode: "0644", force: yes }
+  notify:
+    - compose down
+    - compose up
+
+- name: Compose startup state
+  assert: { that: true, quiet: true }
+  changed_when: true
+  notify:
+    - compose up
+  when: start_compose|bool
