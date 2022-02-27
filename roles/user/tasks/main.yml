@@ -52,3 +52,4 @@
   become: yes
   loop:
     - { file: "gotify.j2", destination: "/usr/local/bin/gotify", owner: "root", mode: "0755" }
+  when: gotify_notify_dest != []
