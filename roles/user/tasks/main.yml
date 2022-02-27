@@ -41,3 +41,14 @@
     state: present
     validate: '/usr/sbin/visudo -cf %s'
   when: users is defined
+
+- name: Ensure scripts
+  template:
+    src: "{{ item.file }}"
+    dest: "{{ item.destination }}"
+    owner: "{{ item.owner }}"
+    group: "{{ item.owner }}"
+    mode: "{{ item.mode }}"
+  become: yes
+  loop:
+    - { file: "gotify.j2", destination: "/usr/local/bin/gotify", owner: "root", mode: "0755" }

@@ -7,3 +7,6 @@ config_restic_prune_policy: '--keep-daily 7 --keep-weekly 5 --keep-monthly 12 --
 
 config_cron_job: { month: "*", day: "*", hour: "2", minute: "30" }
 job_list: []
+
+gotify_notify_dest: []
+  # - {host: "", key: ""}
