@@ -30,6 +30,15 @@ confirm() {
     esac
 }
 
+isfile() {
+  if [[ -r "${1:-}" ]]; then
+      true
+      return
+  fi
+  false
+  return
+}
+
 write_env() {
 echo -e "
 CON_HOST=${CON_HOST}\n\
@@ -110,6 +119,9 @@ echo $(date)
 "$RESTIC_EXE" $@
 while [[ "$?" -ne "0" ]]; do
     if [ $loopnum -eq $LOOPMAX ];then
+        if isfile "/usr/local/bin/gotify" ; then
+            /usr/local/bin/gotify "Restic backup ${CON_HOST} failed" "ERROR"
+        fi 
         break
     fi
     loopnum=$((loopnum+1))
