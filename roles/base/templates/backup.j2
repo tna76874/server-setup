@@ -132,7 +132,7 @@ while [[ "$?" -ne "0" ]]; do
     "$RESTIC_EXE" $@
 done
 
-if [[ "$?" -ne "1" ]];then
+if [[ "$?" -eq "0" ]];then
    if isfile "/usr/local/bin/gotify" ; then
        /usr/local/bin/gotify "Restic job $@ on ${CON_HOST} successful." "Success" "2" || return 0
    fi
