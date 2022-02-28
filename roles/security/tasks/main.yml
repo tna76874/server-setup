@@ -17,3 +17,28 @@
 
 - import_tasks: firewall.yml
   when: config_ufw_firewall
+
+- name: Check gotify executable
+  stat: 
+    path: "{{ gotify_executable }}"
+  register: stat_gotify_exe
+  changed_when: not stat_gotify_exe.stat.exists
+
+- name: Ensure ssh notifier
+  template:
+    src: "{{ item.file }}"
+    dest: "{{ item.destination }}"
+    owner: "{{ item.owner }}"
+    group: "{{ item.owner }}"
+    mode: "{{ item.mode }}"
+  become: yes
+  when: security_enable_ssh_notifications|bool and stat_gotify_exe.stat.exists
+  loop:
+    - { file: "notify_ssh.j2", destination: "{{ ssh_notify_script }}", owner: "root", mode: "0644" }
+
+- name: Notify on ssh logins
+  lineinfile:
+    dest: "/etc/pam.d/sshd"
+    line: "session [default=ignore] pam_exec.so /bin/bash {{ ssh_notify_script }}"
+    state: "{{ 'present' if ( security_enable_ssh_notifications|bool and stat_gotify_exe.stat.exists ) else 'absent' }}"
+  notify: restart sshd

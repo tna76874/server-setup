@@ -1,0 +1,7 @@
+#!/bin/bash
+if [[ "$PAM_TYPE" != "open_session" ]]; then
+        exit 0
+fi
+IP="$(echo $SSH_CONNECTION | cut -d " " -f 1)"
+
+{{ gotify_executable }} "User $PAM_USER logged in from $IP" "SSH" "4"

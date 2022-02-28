@@ -1,3 +1,9 @@
 ---
 # configure ufw firewall
 config_ufw_firewall: true
+
+# enable notifications on ssh login
+security_enable_ssh_notifications: false
+
+gotify_executable: "/usr/local/bin/gotify"
+ssh_notify_script: "/opt/notify-ssh.sh"
