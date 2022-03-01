@@ -4,7 +4,7 @@ if [[ "$PAM_TYPE" != "open_session" ]]; then
 elif [[ "$PAM_USER" == "git" ]]; then
    exit 0
 else
-    {{ gotify_executable }} "User $PAM_USER logged in from $IP" "SSH" "2"
+    {{ gotify_executable }} "User $PAM_USER logged in from $PAM_RHOST" "SSH" "2"
 fi
 
 
