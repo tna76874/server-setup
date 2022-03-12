@@ -1,31 +1,15 @@
 ---
-- name: Check .env file
-  stat: 
-    path: "{{ project_root }}/.env"
-  register: env_file
-  changed_when: not env_file.stat.exists
-  notify:
-    - init env
+# - name: Ensure snap packages present
+#   snap:
+#     name:
+#       - rclone
+#     state: "{% if rclone_snap_enabled|bool %}present{% else %}absent{% endif %}"
+#   ignore_errors: yes
 
-- name: Query latest docker rclone release
-  shell: "wget -q https://registry.hub.docker.com/v1/repositories/rclone/rclone/tags -O - | sed -e 's/[][]//g' -e 's/\"//g' -e 's/ //g' | tr '}' '\n'  | awk -F: '{print $3}' | awk '/^[1-9].[0-9][0-9].[0-9]/{print}'"
-  register: tag_rclone_query
-
-- name: Registering release tag
-  set_fact:
-    tag_rclone: "{{ tag_rclone_query.stdout_lines[-1] }}"
-  when: tag_rclone == None
-
-- name: Ensure directories
-  file:
-    path: "{{ item.path }}"
-    owner: "{{ item.owner }}"
-    state: directory
-    recurse: "{{ item.r }}"
-  loop:
-    - { path: "{{ project_root }}", owner: "{{ server_user }}", r: "no" }
-    - { path: "{{ rclone_config_dir }}", owner: "{{ server_user }}", r: "no" }
-    - { path: "{{ rclone_data_dir }}", owner: "{{ server_user }}", r: "no" }
+# - name: Ensure snaps are refreshed
+#   shell: "snap refresh"
+#   become: yes
+#   changed_when: false
 
 - name: Ensure system scripts
   template:
@@ -35,11 +19,7 @@
     mode: "{{ item.mode }}"
   become: yes
   loop:
-    - { file: "rclone_docker.j2", destination: "/usr/local/bin/rclone_docker", owner: "root", mode: "0750" }
-    - { file: "rclone_docker_config.j2", destination: "/usr/local/bin/rclone_docker_config", owner: "root", mode: "0750" }
-    - { file: "rclone_docker_sync.j2", destination: "/usr/local/bin/rclone_docker_sync", owner: "root", mode: "0750" }
-  notify:
-    - docker pull
+    - { file: "rclone_sync.j2", destination: "/usr/local/bin/rclone_sync", owner: "root", mode: "0750" }
  
 - name: Ensure rclone cron job
   cron:
@@ -49,7 +29,7 @@
     day:  "{{ config_rclone_cron.day }}"
     month: "{{ config_rclone_cron.month }}"
     user: root
-    job: "/usr/local/bin/rclone_docker_sync > /dev/null 2>&1"
+    job: "/usr/local/bin/rclone_sync > /dev/null 2>&1"
     cron_file: rclone_sync
     state: "{% if config_cron_enabled|bool %}present{% else %}absent{% endif %}"
 

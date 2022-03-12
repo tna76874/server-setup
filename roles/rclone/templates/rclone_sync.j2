@@ -1,0 +1,7 @@
+#!/bin/bash
+
+# run indivudual jobs
+{% for job in rclone_jobs %}
+( {{ rclone_executable }} {{ job }} ) &
+{% endfor %}
+wait
