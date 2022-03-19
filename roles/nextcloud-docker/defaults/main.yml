@@ -36,6 +36,16 @@ compose_base_cmd: "{{ compose_executable }} -f {{ project_root }}/docker-compose
 docker_occ_cmd: "{{ compose_base_cmd }} --user www-data app php occ"
 docker_php_cmd: "{{ compose_base_cmd }} --user www-data app php -f cron.php"
 
+# deployed files
+config_file_appendix: ""
+
+config_file_optimize: "/usr/local/bin/nextcloud_optimize{{ config_file_appendix }}.sh"
+config_file_occ : "/usr/local/bin/nextcloud_docker_occ{{ config_file_appendix }}"
+config_file_backup : "/usr/local/bin/nextcloud_backup{{ config_file_appendix }}"
+config_file_backup_cron : "nextcloud_backup{{ config_file_appendix }}"
+config_file_maintenance : "/usr/local/bin/nextcloud_maintenance{{ config_file_appendix }}"
+config_file_cron : "nextcloud_cron{{ config_file_appendix }}"
+
 # public domain of the server
 nginx_domain_name: 
 config_deploy_nginx_config: true
@@ -148,7 +158,7 @@ nextccloud_system_config:
 
 nextcloud_configure_mail: false
 
-nextccloud_mail_config:
+nextcloud_mail_config:
   - {key: "mail_from_address", type: "string", value: "{{ nextcloud_mail_from }}" }
   - {key: "mail_domain", type: "string", value: "{{ nextcloud_mail_domain }}" }
   - {key: "mail_smtphost", type: "string", value: "{{ nextcloud_mail_smtphost }}" }

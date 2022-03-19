@@ -121,7 +121,7 @@
 
   - name: set nextcloud mail config.php values
     shell: '{{ docker_occ_cmd }} config:system:set {{ item.key }} --value={{ item.value }} --type={{ item.type }}'
-    loop:  '{{ nextccloud_mail_config }}'
+    loop:  '{{ nextcloud_mail_config }}'
     when: 
       - nextcloud_configure_mail|bool
 
@@ -154,10 +154,10 @@
     mode: "{{ item.mode }}"
   become: yes
   loop:
-    - { file: "nextcloud_optimize.j2", destination: "/usr/local/bin/nextcloud_optimize.sh", owner: "root", mode: "0750" }
-    - { file: "nextcloud_docker_occ.j2", destination: "/usr/local/bin/nextcloud_docker_occ", owner: "root", mode: "0750" }
-    - { file: "nextcloud_backup.j2", destination: "/usr/local/bin/nextcloud_backup", owner: "root", mode: "0750" }
-    - { file: "nextcloud_maintenance.j2", destination: "/usr/local/bin/nextcloud_maintenance", owner: "root", mode: "0750" }
+    - { file: "nextcloud_optimize.j2", destination: "{{ config_file_optimize }}", owner: "root", mode: "0750" }
+    - { file: "nextcloud_docker_occ.j2", destination: "{{ config_file_occ }}", owner: "root", mode: "0750" }
+    - { file: "nextcloud_backup.j2", destination: "{{ config_file_backup }}", owner: "root", mode: "0750" }
+    - { file: "nextcloud_maintenance.j2", destination: "{{ config_file_maintenance }}", owner: "root", mode: "0750" }
 
 - name: Ensure snap migration script
   template:
@@ -176,7 +176,7 @@
     minute: '15'
     hour:   '01'
     user: root
-    job: "/usr/local/bin/nextcloud_optimize.sh > /dev/null 2>&1"
+    job: "{{ config_file_optimize }} > /dev/null 2>&1"
     cron_file: nextcloud_optimize
 
 - name: nextcloud cronjob
@@ -185,7 +185,7 @@
     minute: '*/15'
     user: root
     job: " ( {{ docker_php_cmd }} > /dev/null 2>&1 ) "
-    cron_file: nextcloud_cron
+    cron_file: "{{ config_file_cron }}"
 
 - name: Ensure backup cron job
   cron:
@@ -195,8 +195,8 @@
     day:  "{{ config_backup_cron.day }}"
     month: "{{ config_backup_cron.month }}"
     user: root
-    job: "/usr/local/bin/nextcloud_backup > /dev/null 2>&1"
-    cron_file: nextcloud_backup
+    job: "{{ config_file_backup }} > /dev/null 2>&1"
+    cron_file: "{{ config_file_backup_cron }}"
     state: "{% if config_backups_enabled|bool %}present{% else %}absent{% endif %}"
 
 - name: run nextcloud cronjob once
