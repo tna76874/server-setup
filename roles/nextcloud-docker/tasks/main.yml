@@ -228,3 +228,6 @@
     
 - name: Ensure theme
   include_tasks: theme.yml
+
+- name: Ensure OIDC state
+  include_tasks: oidc.yml

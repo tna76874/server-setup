@@ -183,3 +183,49 @@ nextcloud_app_config:
 # Theming
 
 nextcloud_custom_theme: 
+
+# OIDC
+
+oidc_enabled: false
+
+oidc_source_settings:
+  base: "https://auth.mydomain.xyz/auth/realms/myrealm"
+  client: "myclient"
+  secret: "mysecret"
+
+oidc_login_attributes_default:
+  id: "ncid"
+  name: "name"
+  mail: "email"
+  # groups: "groups"
+  # is_admin: "ownCloudAdmin"
+
+oidc_config_default:
+  allow_user_to_change_display_name: { type: 'boolean', value: 'false' }
+  oidc_login_end_session_redirect: { type: 'boolean', value: 'false' }
+  oidc_login_auto_redirect: { type: 'boolean', value: 'true' }
+  oidc_login_hide_password_form: { type: 'boolean', value: 'true' }
+  lost_password_link: { type: 'string', value: 'disabled' }
+  oidc_login_button_text: { type: 'string', value: 'Log in with OpenID' }
+  oidc_login_provider_url: { type: 'string', value: "{{ oidc_source_settings.base }}" }
+  oidc_login_client_id: { type: 'string', value: "{{ oidc_source_settings.client }}" }
+  oidc_login_client_secret: { type: 'string', value: "{{ oidc_source_settings.secret }}" }
+  oidc_login_logout_url: { type: 'string', value: "https://{{ nginx_domain_name }}" }
+  oidc_login_use_id_token: { type: 'boolean', value: 'false' }
+  oidc_login_use_external_storage: { type: 'boolean', value: 'false' }
+  oidc_login_proxy_ldap: { type: 'boolean', value: 'false' }
+  oidc_login_disable_registration: { type: 'boolean', value: 'false' }
+  oidc_login_redir_fallback: { type: 'boolean', value: 'false' }
+  oidc_login_scope: { type: 'string', value: 'openid profile' }
+  oidc_login_alt_login_page: { type: 'string', value: 'assets/login.php' }
+  oidc_login_tls_verify: { type: 'boolean', value: 'true' }
+  oidc_create_groups: { type: 'boolean', value: 'true' }
+  oidc_login_webdav_enabled: { type: 'boolean', value: 'false' }
+  oidc_login_password_authentication: { type: 'boolean', value: 'false' }
+  oidc_login_public_key_caching_time: { type: 'integer', value: '86400' }
+  oidc_login_well_known_caching_time: { type: 'integer', value: '86400' }
+  oidc_login_min_time_between_jwks_requests: { type: 'integer', value: '10' }
+  oidc_login_update_avatar: { type: 'boolean', value: 'false' }
+
+oidc_config: {}
+oidc_login_attributes: {}

@@ -1,0 +1,35 @@
+---
+- name: Updating oidc configs
+  set_fact:
+    oidc_config_default: "{{ oidc_config_default|combine(oidc_config) }}"
+    oidc_login_attributes_default: "{{ oidc_login_attributes_default|combine(oidc_login_attributes) }}"
+
+- name: Ensure OIDC app state
+  shell: "{{ docker_occ_cmd }} app:{{ 'enable' if oidc_enabled|bool else 'disable' }} oidc_login"
+
+- name: Ensure OIDC login settings
+  shell: "{{ docker_occ_cmd }} config:system:set oidc_login_attributes {{ item.key }} --value='{{ item.value }}'"
+  loop: "{{ lookup('dict', oidc_login_attributes_default) }}"
+  when: 
+    - oidc_enabled|bool
+
+- name: Ensure OIDC settings
+  shell: "{{ docker_occ_cmd }} config:system:set {{ item.key }} --value='{{ item.value.value }}' --type={{ item.value.type }}"
+  loop: "{{ lookup('dict', oidc_config_default) }}"
+  when: 
+    - oidc_enabled|bool
+
+# - name: Copy theme
+#   ansible.builtin.copy:
+#     src: "{{ nextcloud_custom_theme }}"
+#     dest: "{{ project_root }}/data/nextcloud/themes/"
+#     owner: "{{ 82 if ( 'alpine' in tag_nextcloud ) else 33 }}"
+#     group: "{{ 82 if ( 'alpine' in tag_nextcloud ) else 33 }}"
+#     mode: '0755'
+#   when: nextcloud_custom_theme != None
+
+# - name: Enable theme in config
+#   shell: "{{ docker_occ_cmd }} {{ item }}"
+#   loop:
+#     - "config:system:{{ 'set theme --value='+nextcloud_custom_theme  if ( nextcloud_custom_theme != None ) else 'delete theme' }}"
+#     - "app:{{ 'disable' if ( nextcloud_custom_theme != None ) else 'enable' }} theming"
