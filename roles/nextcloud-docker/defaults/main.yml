@@ -215,7 +215,7 @@ oidc_config_default:
   oidc_login_use_external_storage: { type: 'boolean', value: 'false' }
   oidc_login_proxy_ldap: { type: 'boolean', value: 'false' }
   oidc_login_disable_registration: { type: 'boolean', value: 'false' }
-  oidc_login_redir_fallback: { type: 'boolean', value: 'false' }
+  oidc_login_redir_fallback: { type: 'boolean', value: 'true' }
   oidc_login_scope: { type: 'string', value: 'openid profile' }
   oidc_login_alt_login_page: { type: 'string', value: 'assets/login.php' }
   oidc_login_tls_verify: { type: 'boolean', value: 'true' }

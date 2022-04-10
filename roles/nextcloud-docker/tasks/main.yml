@@ -1,117 +1,122 @@
 ---
-- name: Check .env file
-  stat: 
-    path: "{{ project_root }}/.env"
-  register: env_file
-  changed_when: not env_file.stat.exists
-  notify:
-    - init env
-    - wait for nextcloud
-    - first setup nextcloud
+- name: Run role preflight
+  block:
+  - name: Check .env file
+    stat: 
+      path: "{{ project_root }}/.env"
+    register: env_file
+    changed_when: not env_file.stat.exists
+    notify:
+      - init env
+      - wait for nextcloud
+      - first setup nextcloud
 
-- name: Check if nextcloud snap installation is present
-  stat: 
-    path: "{{ nextcloud_snap_path }}"
-  register: nextcloud_snap_installation
-  changed_when: nextcloud_snap_installation.stat.exists
-  notify:
-    - snap warning
+  - name: Check if nextcloud snap installation is present
+    stat: 
+      path: "{{ nextcloud_snap_path }}"
+    register: nextcloud_snap_installation
+    changed_when: nextcloud_snap_installation.stat.exists
+    notify:
+      - snap warning
 
-- name: Query latest docker nextcloud release
-  shell: "wget -q https://registry.hub.docker.com/v1/repositories/nextcloud/tags -O - | sed -e 's/[][]//g' -e 's/\"//g' -e 's/ //g' | tr '}' '\n'  | awk -F: '{print $3}' | awk '/^[2-9][2-9].[0-9].[0-9]$/{print}' | sort -V"
-  register: nextcloud_version_query
+  - name: Query latest docker nextcloud release
+    shell: "wget -q https://registry.hub.docker.com/v1/repositories/nextcloud/tags -O - | sed -e 's/[][]//g' -e 's/\"//g' -e 's/ //g' | tr '}' '\n'  | awk -F: '{print $3}' | awk '/^[2-9][2-9].[0-9].[0-9]$/{print}' | sort -V"
+    register: nextcloud_version_query
 
-- name: Query latest docker nginx release
-  shell: "wget -q https://registry.hub.docker.com/v1/repositories/nginx/tags -O - | sed -e 's/[][]//g' -e 's/\"//g' -e 's/ //g' | tr '}' '\n'  | awk -F: '{print $3}' | awk '/^[1-9].[0-9][0-9].[0-99]$/{print}' | sort -V"
-  register: nginx_version_query
+  - name: Query latest docker nginx release
+    shell: "wget -q https://registry.hub.docker.com/v1/repositories/nginx/tags -O - | sed -e 's/[][]//g' -e 's/\"//g' -e 's/ //g' | tr '}' '\n'  | awk -F: '{print $3}' | awk '/^[1-9].[0-9][0-9].[0-99]$/{print}' | sort -V"
+    register: nginx_version_query
 
-- name: Registering release tags for nextcloud
-  set_fact:
-    nextcloud_version: "{{ nextcloud_version_query.stdout_lines[-1] }}"
-    tag_nextcloud: "{{ nextcloud_version_query.stdout_lines[-1] }}-{{ nextcloud_installation_family }}"
-  when: (nextcloud_version == None) or (tag_nextcloud == None)
+  - name: Registering release tags for nextcloud
+    set_fact:
+      nextcloud_version: "{{ nextcloud_version_query.stdout_lines[-1] }}"
+      tag_nextcloud: "{{ nextcloud_version_query.stdout_lines[-1] }}-{{ nextcloud_installation_family }}"
+    when: (nextcloud_version == None) or (tag_nextcloud == None)
 
-- name: Registering release tags for nginx
-  set_fact:
-    nginx_version: "{{ nginx_version_query.stdout_lines[-1] }}"
-    tag_nginx: "{{ nginx_version_query.stdout_lines[-1] }}"
+  - name: Registering release tags for nginx
+    set_fact:
+      nginx_version: "{{ nginx_version_query.stdout_lines[-1] }}"
+      tag_nginx: "{{ nginx_version_query.stdout_lines[-1] }}"
 
-- name: Ensure directories-fpm-alpine
-  file:
-    path: "{{ item.path }}"
-    owner: "{{ item.owner }}"
-    state: directory
-    recurse: "{{ item.r }}"
-  loop:
-    - { path: "{{ project_root }}", owner: "{{ server_user }}", r: "no" }
-    - { path: "{{ project_root }}/data/nginx", owner: "{{ server_user }}", r: "no" }
-    - { path: "{{ project_root }}/data/nextcloud", owner: "www-data", r: "no" }
-    - { path: "{{ nextcloud_database_dump_dir }}", owner: "{{ server_user }}", r: "no" }
-    - { path: "{{ project_root }}/data/config", owner: "root", r: "no" }
+  - name: Ensure directories-fpm-alpine
+    file:
+      path: "{{ item.path }}"
+      owner: "{{ item.owner }}"
+      state: directory
+      recurse: "{{ item.r }}"
+    loop:
+      - { path: "{{ project_root }}", owner: "{{ server_user }}", r: "no" }
+      - { path: "{{ project_root }}/data/nginx", owner: "{{ server_user }}", r: "no" }
+      - { path: "{{ project_root }}/data/nextcloud", owner: "www-data", r: "no" }
+      - { path: "{{ nextcloud_database_dump_dir }}", owner: "{{ server_user }}", r: "no" }
+      - { path: "{{ project_root }}/data/config", owner: "root", r: "no" }
 
-- name: Ensure fpm nginx.conf
-  get_url:
-    url: "{{ config_nginx_fpm }}"
-    dest: "{{ project_root }}/data/nginx/nginx.conf"
+  - name: Ensure fpm nginx.conf
+    get_url:
+      url: "{{ config_nginx_fpm }}"
+      dest: "{{ project_root }}/data/nginx/nginx.conf"
 
-- name: Ensure nginx template
-  template:
-    src: "{{ item.file }}"
-    dest: "{{ item.destination }}"
-    owner: "{{ item.owner }}"
-    mode: "{{ item.mode }}"
-  loop:
-    - { file: "nginx.j2", destination: "/etc/nginx/{{ nginx_domain_name }}.d/nginx.conf", owner: "root", mode: "0644" }
-  become: yes
-  when: ( nginx_domain_name != None ) and ( config_deploy_nginx_config|bool )
-  notify:
-    - reload nginx
+  - name: Ensure nginx template
+    template:
+      src: "{{ item.file }}"
+      dest: "{{ item.destination }}"
+      owner: "{{ item.owner }}"
+      mode: "{{ item.mode }}"
+    loop:
+      - { file: "nginx.j2", destination: "/etc/nginx/{{ nginx_domain_name }}.d/nginx.conf", owner: "root", mode: "0644" }
+    become: yes
+    when: ( nginx_domain_name != None ) and ( config_deploy_nginx_config|bool )
+    notify:
+      - reload nginx
 
-- name: init templates
-  template:
-    src: "{{ item.file }}"
-    dest: "{{ item.destination }}"
-    owner: "{{ item.owner }}"
-    group: "{{ item.owner }}"
-    mode: "{{ item.mode }}"
-  become: yes
-  loop:
-    - { file: "docker-compose.j2", destination: "{{ project_root }}/docker-compose.yml", owner: "{{ server_user }}", mode: "0755" }
-    - { file: "php.j2", destination: "{{ project_root }}/data/config/nextcloud.ini", owner: "root", mode: "0644" }
-    - { file: "www.conf.j2", destination: "{{ project_root }}/data/config/www.conf", owner: "root", mode: "0644" }
-  notify:
-    - compose down
-    - compose up
+  - name: init templates
+    template:
+      src: "{{ item.file }}"
+      dest: "{{ item.destination }}"
+      owner: "{{ item.owner }}"
+      group: "{{ item.owner }}"
+      mode: "{{ item.mode }}"
+    become: yes
+    loop:
+      - { file: "docker-compose.j2", destination: "{{ project_root }}/docker-compose.yml", owner: "{{ server_user }}", mode: "0755" }
+      - { file: "php.j2", destination: "{{ project_root }}/data/config/nextcloud.ini", owner: "root", mode: "0644" }
+      - { file: "www.conf.j2", destination: "{{ project_root }}/data/config/www.conf", owner: "root", mode: "0644" }
+    notify:
+      - compose down
+      - compose up
 
-- name: Ensure uploadsize in {{ nextcloud_www_dir }}/config
-  template:
-    src:  "{{ item.src }}"
-    dest: "{{ item.dest }}"
-    owner: "{{ item.owner }}"
-    group: "{{ item.owner }}"
-    mode: 0644
-  loop:
-    - {src: "uploadsize.j2", dest: "{{ project_root }}/data/nginx/uploadsize.conf", owner: "{{ 82 if ( 'alpine' in tag_nextcloud ) else 33 }}"}
-  notify:
-    - compose down
-    - compose up
+  - name: Ensure uploadsize in {{ nextcloud_www_dir }}/config
+    template:
+      src:  "{{ item.src }}"
+      dest: "{{ item.dest }}"
+      owner: "{{ item.owner }}"
+      group: "{{ item.owner }}"
+      mode: 0644
+    loop:
+      - {src: "uploadsize.j2", dest: "{{ project_root }}/data/nginx/uploadsize.conf", owner: "{{ 82 if ( 'alpine' in tag_nextcloud ) else 33 }}"}
+    notify:
+      - compose down
+      - compose up
 
-- name: Compose startup state
-  assert: { that: true, quiet: true }
-  changed_when: true
-  notify:
-    - compose up
-  when: start_compose|bool
+  - name: Compose startup state
+    assert: { that: true, quiet: true }
+    changed_when: true
+    notify:
+      - compose up
+    when: start_compose|bool
 
-- name: Flush handlers
-  meta: flush_handlers
+  - name: Flush handlers
+    meta: flush_handlers
 
-- name: Ensure Permissions
-  shell: "{{ compose_base_cmd }} app chown -R www-data:www-data /var/www/html/{{ item }}"
-  changed_when: false
-  loop:
-    - ""
-  when: force_nextcloud_config|default(false)
+  - name: Ensure Permissions
+    shell: "{{ compose_base_cmd }} app chown -R www-data:www-data /var/www/html/{{ item }}"
+    changed_when: false
+    loop:
+      - ""
+    when: force_nextcloud_config|default(false)
+  when: run_preflight|default(true)|bool
+
+#####################
 
 - name: Configure nextcloud 
   block:
@@ -144,64 +149,71 @@
       - app:update --all
       - db:add-missing-indices
       - db:convert-filecache-bigint
-  when: force_nextcloud_config|default(false)
+  when: force_nextcloud_config|default(false)|bool
 
-- name: Ensure system scripts
-  template:
-    src: "{{ item.file }}"
-    dest: "{{ item.destination }}"
-    owner: "{{ item.owner }}"
-    mode: "{{ item.mode }}"
-  become: yes
-  loop:
-    - { file: "nextcloud_optimize.j2", destination: "{{ config_file_optimize }}", owner: "root", mode: "0750" }
-    - { file: "nextcloud_docker_occ.j2", destination: "{{ config_file_occ }}", owner: "root", mode: "0750" }
-    - { file: "nextcloud_backup.j2", destination: "{{ config_file_backup }}", owner: "root", mode: "0750" }
-    - { file: "nextcloud_maintenance.j2", destination: "{{ config_file_maintenance }}", owner: "root", mode: "0750" }
+#################################################
 
-- name: Ensure snap migration script
-  template:
-    src: "{{ item.file }}"
-    dest: "{{ item.destination }}"
-    owner: "{{ item.owner }}"
-    mode: "{{ item.mode }}"
-  become: yes
-  loop:
-    - { file: "nextcloud_migrate_snap_to_docker.j2", destination: "{{ project_root }}/nextcloud_migrate_snap_to_docker.sh", owner: "root", mode: "0750" }
-  when: nextcloud_snap_installation.stat.exists
- 
-- name: optimize nextcloud cronjob
-  cron:
-    name: nextcloud optimize
-    minute: '15'
-    hour:   '01'
-    user: root
-    job: "{{ config_file_optimize }} > /dev/null 2>&1"
-    cron_file: nextcloud_optimize
+- name: System-scripts and startup routines 
+  block:
+  - name: Ensure system scripts
+    template:
+      src: "{{ item.file }}"
+      dest: "{{ item.destination }}"
+      owner: "{{ item.owner }}"
+      mode: "{{ item.mode }}"
+    become: yes
+    loop:
+      - { file: "nextcloud_optimize.j2", destination: "{{ config_file_optimize }}", owner: "root", mode: "0750" }
+      - { file: "nextcloud_docker_occ.j2", destination: "{{ config_file_occ }}", owner: "root", mode: "0750" }
+      - { file: "nextcloud_backup.j2", destination: "{{ config_file_backup }}", owner: "root", mode: "0750" }
+      - { file: "nextcloud_maintenance.j2", destination: "{{ config_file_maintenance }}", owner: "root", mode: "0750" }
 
-- name: nextcloud cronjob
-  cron:
-    name: nextcloud cronjob
-    minute: '*/15'
-    user: root
-    job: " ( {{ docker_php_cmd }} > /dev/null 2>&1 ) "
-    cron_file: "{{ config_file_cron }}"
+  - name: Ensure snap migration script
+    template:
+      src: "{{ item.file }}"
+      dest: "{{ item.destination }}"
+      owner: "{{ item.owner }}"
+      mode: "{{ item.mode }}"
+    become: yes
+    loop:
+      - { file: "nextcloud_migrate_snap_to_docker.j2", destination: "{{ project_root }}/nextcloud_migrate_snap_to_docker.sh", owner: "root", mode: "0750" }
+    when: nextcloud_snap_installation.stat.exists
+  
+  - name: optimize nextcloud cronjob
+    cron:
+      name: nextcloud optimize
+      minute: '15'
+      hour:   '01'
+      user: root
+      job: "{{ config_file_optimize }} > /dev/null 2>&1"
+      cron_file: nextcloud_optimize
 
-- name: Ensure backup cron job
-  cron:
-    name: nextcloud backup
-    minute: "{{ config_backup_cron.minute }}"
-    hour:   "{{ config_backup_cron.hour }}"
-    day:  "{{ config_backup_cron.day }}"
-    month: "{{ config_backup_cron.month }}"
-    user: root
-    job: "{{ config_file_backup }} > /dev/null 2>&1"
-    cron_file: "{{ config_file_backup_cron }}"
-    state: "{% if config_backups_enabled|bool %}present{% else %}absent{% endif %}"
+  - name: nextcloud cronjob
+    cron:
+      name: nextcloud cronjob
+      minute: '*/15'
+      user: root
+      job: " ( {{ docker_php_cmd }} > /dev/null 2>&1 ) "
+      cron_file: "{{ config_file_cron }}"
 
-- name: run nextcloud cronjob once
-  shell: '{{ docker_php_cmd }} > /dev/null 2>&1'
-  when: force_nextcloud_config|default(false)
+  - name: Ensure backup cron job
+    cron:
+      name: nextcloud backup
+      minute: "{{ config_backup_cron.minute }}"
+      hour:   "{{ config_backup_cron.hour }}"
+      day:  "{{ config_backup_cron.day }}"
+      month: "{{ config_backup_cron.month }}"
+      user: root
+      job: "{{ config_file_backup }} > /dev/null 2>&1"
+      cron_file: "{{ config_file_backup_cron }}"
+      state: "{% if config_backups_enabled|bool %}present{% else %}absent{% endif %}"
+
+  - name: run nextcloud cronjob once
+    shell: '{{ docker_php_cmd }} > /dev/null 2>&1'
+    when: force_nextcloud_config|default(false)
+  when: startup_routines|default(true)|bool
+
+######################
 
 - name: setup collabora app in nextcloud
   include_tasks: configure_collabora.yml

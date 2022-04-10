@@ -7,6 +7,11 @@
 - name: Ensure OIDC app state
   shell: "{{ docker_occ_cmd }} app:{{ 'enable' if oidc_enabled|bool else 'disable' }} oidc_login"
 
+- name: Ensure OIDC social login is disabled, when using OIDC
+  shell: "{{ docker_occ_cmd }} app:disable sociallogin"
+  when: 
+    - oidc_enabled|bool
+
 - name: Ensure OIDC login settings
   shell: "{{ docker_occ_cmd }} config:system:set oidc_login_attributes {{ item.key }} --value='{{ item.value }}'"
   loop: "{{ lookup('dict', oidc_login_attributes_default) }}"
@@ -18,18 +23,3 @@
   loop: "{{ lookup('dict', oidc_config_default) }}"
   when: 
     - oidc_enabled|bool
-
-# - name: Copy theme
-#   ansible.builtin.copy:
-#     src: "{{ nextcloud_custom_theme }}"
-#     dest: "{{ project_root }}/data/nextcloud/themes/"
-#     owner: "{{ 82 if ( 'alpine' in tag_nextcloud ) else 33 }}"
-#     group: "{{ 82 if ( 'alpine' in tag_nextcloud ) else 33 }}"
-#     mode: '0755'
-#   when: nextcloud_custom_theme != None
-
-# - name: Enable theme in config
-#   shell: "{{ docker_occ_cmd }} {{ item }}"
-#   loop:
-#     - "config:system:{{ 'set theme --value='+nextcloud_custom_theme  if ( nextcloud_custom_theme != None ) else 'delete theme' }}"
-#     - "app:{{ 'disable' if ( nextcloud_custom_theme != None ) else 'enable' }} theming"
