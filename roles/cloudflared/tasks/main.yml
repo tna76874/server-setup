@@ -1,5 +1,10 @@
 ---
-
+- name: Triggering handler when Release==bionic
+  assert: { that: true, quiet: true }
+  changed_when: true
+  notify:
+    - deb install
+  when: ansible_distribution_release == "bionic"
 
 - name: Ensure cloudflared
   block:
@@ -35,7 +40,11 @@
       update_cache: true
     loop: "{{ config_apt_sources }}"
 
-  - name: Ensure cloudflared over .deb
-    apt:
-      deb: "{{ config_cloudflared_deb_url }}"
-    ignore_errors: yes
+  - name: Triggering handler
+    assert: { that: true, quiet: true }
+    changed_when: true
+    notify:
+      - deb install
+  when: ansible_distribution_release != "bionic"
+    
+
