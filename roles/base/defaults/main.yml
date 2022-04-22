@@ -25,6 +25,7 @@ default_apt_packages:
   - openssh-server
   - zip
   - unzip
+  - dos2unix
   - screen
   - ncdu
   - bmon
