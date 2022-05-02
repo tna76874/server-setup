@@ -1,6 +1,6 @@
 ---
 # docker image tags
-tag_collabora: 'latest'
+tag_collabora: 
 
 # ensure docker-compose gets restarted on every run
 restart_compose: false
