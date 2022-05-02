@@ -1,6 +1,6 @@
 ---
 # cryptpad release.
-docker_release: latest
+docker_release: 'v4.12.0'
 # running user
 server_user: root
 # project root
