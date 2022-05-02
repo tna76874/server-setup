@@ -6,7 +6,7 @@
 
 */
 module.exports = {
-    httpUnsafeOrigin: 'http://localhost:3000',
+    httpUnsafeOrigin: 'http://localhost:3000 http://127.0.0.1:{{ config_tcp }}',
     httpSafeOrigin: "https://{{ nginx_domain_name }}",
     httpAddress: '::',
     httpPort: 3000,
