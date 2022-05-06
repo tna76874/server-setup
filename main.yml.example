@@ -116,7 +116,6 @@
     - vars.yml
   vars:
     nginx_domain_name: "cryptpad.{{ main_domain }}"
-    docker_release: latest
   roles:
     - nginx-tls-add
     - cryptpad

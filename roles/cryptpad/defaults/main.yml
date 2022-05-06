@@ -1,6 +1,7 @@
 ---
 # cryptpad release.
-docker_release: 'v4.12.0'
+docker_release: 
+docker_channel: '-nginx-alpine'
 # running user
 server_user: root
 # project root

@@ -4,7 +4,7 @@ version: '3.8'
 services:
   cryptpad:
     user: root
-    image: promasu/cryptpad:{{ docker_release }}
+    image: promasu/cryptpad:{{ docker_release }}{{ docker_channel }}
     hostname: cryptpad
     container_name: cryptpad
     restart: always
@@ -13,6 +13,9 @@ services:
       - CPAD_MAIN_DOMAIN={{ nginx_domain_name }}
       - CPAD_SANDBOX_DOMAIN={{ nginx_domain_name }}
       - CPAD_HTTP2_DISABLE=true
+      - CPAD_TRUSTED_PROXY=10.0.0.0/8
+      - CPAD_REALIP_HEADER=X-Forwarded-For
+      - CPAD_REALIP_RECURSIVE=on
 
     volumes:
       - ./data/blob:/cryptpad/blob
@@ -23,7 +26,7 @@ services:
       - ./data/config/config.js:/cryptpad/config/config.js
 
     ports:
-      - "127.0.0.1:{{ config_tcp }}:3000"
+      - "127.0.0.1:{{ config_tcp }}:80"
 
     expose:
       - "80"
