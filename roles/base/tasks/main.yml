@@ -119,3 +119,15 @@
     job: "/usr/local/bin/custom_cronjobs > /dev/null 2>&1"
     cron_file: custom_cron_jobs
     state: "{% if (job_list != []) %}present{% else %}absent{% endif %}"
+
+- name: Ensure scripts
+  template:
+    src: "{{ item.file }}"
+    dest: "{{ item.destination }}"
+    owner: "{{ item.owner }}"
+    group: "{{ item.owner }}"
+    mode: "{{ item.mode }}"
+  become: yes
+  loop:
+    - { file: "gotify.j2", destination: "/usr/local/bin/gotify", owner: "root", mode: "0755" }
+  when: gotify_notify_dest != []
