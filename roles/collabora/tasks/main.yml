@@ -25,6 +25,13 @@
     tag_collabora: "{{ collabora_version_query.stdout_lines[-1] }}"
   when: (tag_collabora == None)
 
+- name: Create aliasgroup list
+  set_fact: 
+      aliasgroups_list: "{{ aliasgroups_list|default([]) + [ 'aliasgroup{:}'.format(grpidx+1)+'=https://'+item+':443,https://'+item.replace('.','\\\\.')+':443' ] }}"
+  loop: "{{ aliasgroups }}"
+  loop_control:
+    index_var: grpidx
+
 - name: Ensure nginx template
   template:
     src: "{{ item.file }}"

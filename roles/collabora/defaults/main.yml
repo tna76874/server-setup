@@ -13,7 +13,7 @@ server_user: root
 # project root
 project_root: "/srv/{{ docker_config_project }}"
 # public domain of the server
-nginx_domain_name: 
+nginx_domain_name:
 # Docker-compose configs
 compose_config_startup: always
 compose_config_admin_pw: "{{ lookup('password', '/dev/null length=64 chars=ascii_letters,digits') }}"
@@ -21,3 +21,6 @@ compose_config_admin_pw: "{{ lookup('password', '/dev/null length=64 chars=ascii
 compose_config_tcp_port: "4563"
 compose_config_env:
   - { var: "extra_params", val: "--o:ssl.enable=true" }
+
+aliasgroups: []
+  # - moodle.mydomain.com

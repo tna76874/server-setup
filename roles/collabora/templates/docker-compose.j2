@@ -8,7 +8,9 @@ services:
 {% for envs in compose_config_env %}
       - {{ envs.var }}={{ envs.val }}
 {% endfor %}
-      - aliasgroup1=https://{{ collabora_listen_domain }}:443,https://{{ collabora_listen_domain.replace('.','\\\\.') }}:443
+{% for moodlealias in aliasgroups_list %}
+      - {{ moodlealias }}
+{% endfor %}
       - username=admin
       - {% raw %}password=${PASSWORD}{% endraw %}
 
