@@ -24,11 +24,20 @@
     state: absent
   ignore_errors: yes
 
+- name: docker build redis
+  community.docker.docker_image:
+    name: "redisbuildnc:{{ tag_redis }}"
+    build:
+      path: "{{ project_root }}/build"
+      dockerfile: "Dockerfile_redis"
+    source: build
+  become: yes
+
 - name: compose up
   docker_compose:
     project_src: "{{ project_root }}"
     state: present
-    pull: yes
+    pull: no
 
 - name: wait for nextcloud
   wait_for:

@@ -1,0 +1,3 @@
+FROM redis:{{ tag_redis }}
+
+RUN echo "vm.overcommit_memory = 1" >> /etc/sysctl.conf

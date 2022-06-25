@@ -11,7 +11,7 @@ services:
       - ./.env
 
   redis:
-    image: redis:{{ tag_redis }}
+    image: redisbuildnc:{{ tag_redis }}
     restart: always
     volumes:
       - ./data/redis:/var/lib/redis
