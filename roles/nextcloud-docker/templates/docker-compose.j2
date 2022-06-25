@@ -13,8 +13,6 @@ services:
   redis:
     image: redisbuildnc:{{ tag_redis }}
     restart: always
-    volumes:
-      - ./data/redis:/var/lib/redis
 
 {% if (nextcloud_installation_family=='fpm-alpine') %}
   app:

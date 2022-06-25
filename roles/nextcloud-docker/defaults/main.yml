@@ -4,8 +4,8 @@ nextcloud_installation_family: 'fpm-alpine'
 
 # docker image tags
 ### If tag_nextcloud will be left EMPTY, the latest release will be curled from docker hub and used.
-nextcloud_version: '23.0.5'
-tag_nextcloud: "{{ nextcloud_version|default(nextcloud_version) }}-{{ nextcloud_installation_family }}"
+nextcloud_version: '23.0.6'
+tag_nextcloud: "{{ nextcloud_version }}-{{ nextcloud_installation_family }}"
 
 ### other tags (the latest tag for nginx will always be pulled)
 tag_redis: 
