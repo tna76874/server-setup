@@ -61,10 +61,33 @@
       - { path: "{{ project_root }}/data/config", owner: "root", r: "no" }
       - { path: "{{ project_root }}/build", owner: "root", r: "no" }
 
-  - name: Ensure fpm nginx.conf
+########################################
+
+  - name: Ensure fpm nginx.conf - default example config
     get_url:
       url: "{{ config_nginx_fpm }}"
       dest: "{{ project_root }}/data/nginx/nginx.conf"
+    when: nginx_config_from_default_example|bool
+    notify:
+      - compose down
+      - compose up
+
+  - name: Ensure fpm nginx.conf - repo version
+    template:
+      src: "{{ item.file }}"
+      dest: "{{ item.destination }}"
+      owner: "{{ item.owner }}"
+      mode: "{{ item.mode }}"
+    loop:
+      - { file: "nginx.conf.j2", destination: "{{ project_root }}/data/nginx/nginx.conf", owner: "{{ 82 if ( 'alpine' in tag_nextcloud ) else 33 }}", mode: "0644" }
+      - { file: "uploadsize.j2", destination: "{{ project_root }}/data/nginx/uploadsize.conf", owner: "{{ 82 if ( 'alpine' in tag_nextcloud ) else 33 }}", mode: "0644" }
+    become: yes
+    when: not nginx_config_from_default_example|bool
+    notify:
+      - compose down
+      - compose up
+
+########################################
 
   - name: Ensure nginx template
     template:
@@ -108,19 +131,6 @@
     notify:
       - compose down
       - docker build redis
-      - compose up
-
-  - name: Ensure uploadsize in {{ nextcloud_www_dir }}/config
-    template:
-      src:  "{{ item.src }}"
-      dest: "{{ item.dest }}"
-      owner: "{{ item.owner }}"
-      group: "{{ item.owner }}"
-      mode: 0644
-    loop:
-      - {src: "uploadsize.j2", dest: "{{ project_root }}/data/nginx/uploadsize.conf", owner: "{{ 82 if ( 'alpine' in tag_nextcloud ) else 33 }}"}
-    notify:
-      - compose down
       - compose up
 
   - name: Compose startup state
