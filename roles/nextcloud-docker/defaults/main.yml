@@ -221,12 +221,15 @@ oidc_config_default:
   oidc_login_alt_login_page: { type: 'string', value: 'assets/login.php' }
   oidc_login_tls_verify: { type: 'boolean', value: 'true' }
   oidc_create_groups: { type: 'boolean', value: 'true' }
-  oidc_login_webdav_enabled: { type: 'boolean', value: 'false' }
-  oidc_login_password_authentication: { type: 'boolean', value: 'false' }
   oidc_login_public_key_caching_time: { type: 'integer', value: '86400' }
   oidc_login_well_known_caching_time: { type: 'integer', value: '86400' }
   oidc_login_min_time_between_jwks_requests: { type: 'integer', value: '10' }
   oidc_login_update_avatar: { type: 'boolean', value: 'false' }
+  # WebDAV config. Please read details of the OIDC configuration:
+  # https://github.com/pulsejet/nextcloud-oidc-login
+  # --> Configuration for WebDAV access
+  oidc_login_webdav_enabled: { type: 'boolean', value: 'true' }
+  oidc_login_password_authentication: { type: 'boolean', value: 'true' }
 
 oidc_config: {}
 oidc_login_attributes: {}
