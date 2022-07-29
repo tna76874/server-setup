@@ -2,7 +2,7 @@ version: '3.8'
 services:
   mail:
     image: docker.io/mailserver/docker-mailserver:{{ mailserver_release }}
-    hostname: ${HOSTNAME}
+    hostname: ${HOSTNAME}.${DOMAINNAME}
     domainname: ${DOMAINNAME}
     container_name: ${CONTAINER_NAME}
     env_file: mailserver.env
@@ -19,6 +19,10 @@ services:
 {% for port in compose_extra_ports %}
       - {{ port.bind }}{{ port.host }}:{{ port.container }}
 {% endfor %}
+    expose:
+{% for port in compose_ports %}
+      - {{ port.container }}
+{% endfor %}
     volumes:
       - ./maildata:/var/mail
       - ./mailstate:/var/mail-state
@@ -28,3 +32,6 @@ services:
       - /etc/letsencrypt/live/${HOSTNAME}.${DOMAINNAME}/privkey.pem:/etc/letsencrypt/live/${HOSTNAME}.${DOMAINNAME}/privkey.pem
     cap_add: [ "NET_ADMIN", "SYS_PTRACE" ]
     restart: always
+networks:
+  default:
+    name: ${CONTAINER_NAME}_network

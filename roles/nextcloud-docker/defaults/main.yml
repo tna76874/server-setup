@@ -68,6 +68,8 @@ compose_extra_volumes: []
 
 nextcloud_admin: 'admin'
 
+nc_external_network: ''
+
 # Database
 
 nextcloud_db_type: 'mysql'

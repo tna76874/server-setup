@@ -52,11 +52,14 @@
   docker_compose:
     project_src: "{{ project_root }}"
     state: absent
+  ignore_errors: yes
+  become: yes
 
 - name: compose up
   docker_compose:
     project_src: "{{ project_root }}"
     state: present
     pull: yes
+  become: yes
 
 

@@ -23,6 +23,7 @@
     project_src: "{{ project_root }}"
     state: absent
   ignore_errors: yes
+  become: yes
 
 - name: docker build redis
   community.docker.docker_image:
