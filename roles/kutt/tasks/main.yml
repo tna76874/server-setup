@@ -7,16 +7,21 @@
   notify:
     - init env
 
-- name: Query latest docker release
-  shell: "wget -q https://registry.hub.docker.com/v1/repositories/kutt/kutt/tags -O - | sed -e 's/[][]//g' -e 's/\"//g' -e 's/ //g' | tr '}' '\n'  | awk -F: '{print $3}' | awk '/^v[2-9].[0-9].[0-9]/{print}'"
-  args:
-    warn: false
-  register: tag_kutt_query
+###################################################################################
+
+- name: Query kutt tags from github
+  uri:
+    url: https://api.github.com/repos/thedevs-network/kutt/tags
+    return_content: true                                             
+  register: kutt_github_tags
+  ignore_errors: yes
 
 - name: Registering release tag
   set_fact:
-    tag_kutt: "{{ tag_kutt_query.stdout_lines[-1] }}"
-  when: tag_kutt == None
+    tag_kutt:  "{{ (kutt_github_tags.json  | rejectattr('name', 'contains', '-') | selectattr('name', 'contains', 'v') | list)[0]['name'] }}"
+  when: (tag_kutt == None)
+
+###################################################################################
 
 - name: Ensure directories
   file:
@@ -26,6 +31,7 @@
     recurse: "{{ item.r }}"
   loop:
     - { path: "{{ project_root }}", owner: "{{ server_user }}", r: "no" }
+    - { path: "{{ base_build_dir }}", owner: "root", r: "no" }
 
 - name: Ensure nginx template
   template:
@@ -39,6 +45,8 @@
   when: ( nginx_domain_name != None )
   notify:
     - reload nginx
+
+- import_tasks: build.yml
 
 - name: init templates
   template:

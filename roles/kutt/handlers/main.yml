@@ -28,4 +28,4 @@
   docker_compose:
     project_src: "{{ project_root }}"
     state: present
-    pull: yes
+    pull: no

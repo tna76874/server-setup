@@ -2,7 +2,7 @@ version: "3"
 
 services:
   kutt:
-    image: kutt/kutt:{{ tag_kutt }}
+    image: kuttcustom:{{ tag_kutt }}
     restart: {{ restart_policy }}
     depends_on:
       - postgres

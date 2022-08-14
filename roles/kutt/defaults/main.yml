@@ -1,9 +1,15 @@
 ---
 # docker image tags
 ### If tag_kutt will be left EMPTY, the latest release will be curled from docker hub and used.
-tag_kutt: 'v2.7.3'
+tag_kutt: 'v2.7.4'
 tag_redis: '6.0-alpine'
 tag_postgres: '12-alpine'
+
+# build repo
+build_repo: "https://github.com/thedevs-network/kutt.git"
+base_build_dir: "{{ project_root }}/build"
+base_build_dir_fonts: "{{ base_build_dir }}/static/fonts"
+base_build_font: "Nunito-VariableFont_wght.ttf"
 
 # ensure docker-compose gets restarted on every run
 restart_compose: false

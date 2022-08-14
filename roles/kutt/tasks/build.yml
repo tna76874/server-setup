@@ -1,0 +1,72 @@
+---
+- name: Ensure git build repo
+  block:
+  - name: Ensure build git repo
+    ansible.builtin.git:
+      repo: "{{ build_repo }}"
+      dest: "{{ base_build_dir }}"
+      clone: yes
+      update: yes
+      force: yes
+      version: "{{ tag_kutt }}"
+      refspec: '+refs/tags/*:refs/tags/*'
+    changed_when: False
+
+  rescue:
+  - name: Delete git repo
+    file:
+      state: absent
+      dest: "{{ base_build_dir }}"
+
+  - name: Ensure build git repo
+    ansible.builtin.git:
+      repo: "{{ build_repo }}"
+      dest: "{{ base_build_dir }}"
+      clone: yes
+      update: yes
+      force: yes
+      version: "{{ tag_kutt }}"
+      refspec: '+refs/tags/*:refs/tags/*'
+    changed_when: False
+
+- name: Ensure font directory
+  file:
+    path: "{{ item.path }}"
+    owner: "{{ item.owner }}"
+    state: directory
+    recurse: "{{ item.r }}"
+  loop:
+    - { path: "{{ base_build_dir_fonts }}", owner: "root", r: "no" }
+
+- name: Ensure fonts
+  ansible.builtin.unarchive:
+    src: https://fonts.google.com/download?family=Nunito
+    dest: "{{ base_build_dir_fonts }}"
+    remote_src: yes
+
+- name: Ensure build templates
+  template:
+    src: "{{ item.file }}"
+    dest: "{{ item.destination }}"
+    owner: "{{ item.owner }}"
+    group: "{{ item.owner }}"
+    mode: "{{ item.mode }}"
+  become: yes
+  loop:
+    - { file: "_document.tsx.j2", destination: "{{ base_build_dir }}/client/pages/_document.tsx", owner: "{{ server_user }}", mode: "0755" }
+
+- name: docker build base
+  docker_image:
+    # state: present
+    # force_source: yes
+    name: "kuttcustom:{{ tag_kutt }}"
+    build:
+      path: "{{ base_build_dir }}"
+      dockerfile: "{{ base_build_dir }}/Dockerfile"
+      nocache: yes
+      pull: yes
+    source: build
+  become: yes
+  notify:
+    - compose down
+    - compose up
