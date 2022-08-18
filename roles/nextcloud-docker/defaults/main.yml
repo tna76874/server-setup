@@ -4,13 +4,17 @@ nextcloud_installation_family: 'fpm-alpine'
 
 # docker image tags
 ### If tag_nextcloud will be left EMPTY, the latest release will be curled from docker hub and used.
-nextcloud_version: '23.0.6'
+nextcloud_version: '23.0.8'
 tag_nextcloud: "{{ nextcloud_version }}-{{ nextcloud_installation_family }}"
 
 ### other tags (the latest tag for nginx will always be pulled)
-tag_redis: 
-tag_mariadb: '10.5'
+tag_redis: '7.0.4'
+tag_nginx: '1.23.1'
 tag_calbackup: 'latest'
+
+# do NOT touch this tag - it might break things
+tag_mariadb: '10.5'
+
 
 # nginx fpm config
 config_nginx_fpm: "https://raw.githubusercontent.com/nextcloud/docker/master/.examples/docker-compose/with-nginx-proxy/mariadb/fpm/web/nginx.conf"

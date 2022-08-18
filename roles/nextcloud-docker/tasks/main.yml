@@ -41,6 +41,7 @@
     set_fact:
       nginx_version: "{{ nginx_version_query.stdout_lines[-1] }}"
       tag_nginx: "{{ nginx_version_query.stdout_lines[-1] }}"
+    when: (tag_nginx == None)
 
   - name: Registering release tags for redis
     set_fact:
