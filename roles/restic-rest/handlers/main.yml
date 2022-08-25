@@ -17,6 +17,7 @@
   docker_compose:
     project_src: "{{ project_root }}"
     state: absent
+  become: true
   ignore_errors: yes
   when: compose_file.stat.exists
 
@@ -29,6 +30,7 @@
   docker_compose:
     project_src: "{{ project_root }}"
     state: absent
+  become: true
 
 - name: copy certs
   shell: "/usr/local/bin/rest_copy_certs.sh > /dev/null 2>&1"
@@ -40,6 +42,7 @@
     project_src: "{{ project_root }}"
     state: present
     pull: yes
+  become: true
   notify:
     - wait for
     - compose up
