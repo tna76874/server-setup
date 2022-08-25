@@ -40,6 +40,19 @@
     project_src: "{{ project_root }}"
     state: present
     pull: yes
+  notify:
+    - wait for
+    - compose up
+
+- name: wait for
+  uri:
+    url: "http://localhost:{{ compose_config_tcp_port }}"
+    validate_certs: no
+    status_code: [200,412]
+  register: result
+  until: result.status == 200
+  retries: 40
+  delay: 10
 
 - name: init user
   shell: '{{ docker_cmd }} create_user {{ item.user }} {{ item.pw }}'
