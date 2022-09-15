@@ -24,6 +24,9 @@ services:
       - {{ port.container }}
 {% endfor %}
     volumes:
+{% for extravol in compose_extra_volumes %}
+      - {{ extravol }}
+{% endfor %}
       - ./maildata:/var/mail
       - ./mailstate:/var/mail-state
       - ./maillogs:/var/log/mail

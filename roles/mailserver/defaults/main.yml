@@ -26,3 +26,6 @@ compose_extra_ports: []
 
 compose_config_env: []
   # - { var: "ENABLE_MANAGESIEVE", val: "1" }
+
+compose_extra_volumes: []
+  # - "./extravolume:/path/in/my/container"
