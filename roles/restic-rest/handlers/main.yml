@@ -56,6 +56,7 @@
   until: result.status == 200
   retries: 40
   delay: 10
+  when: config_reverse_proxy_frontend|bool
 
 - name: init user
   shell: '{{ docker_cmd }} create_user {{ item.user }} {{ item.pw }}'
