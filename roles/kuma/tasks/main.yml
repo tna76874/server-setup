@@ -7,14 +7,21 @@
   notify:
     - init env
 
-- name: Query latest docker release
-  shell: "wget -q https://registry.hub.docker.com/v1/repositories/louislam/uptime-kuma/tags -O - | sed -e 's/[][]//g' -e 's/\"//g' -e 's/ //g' | tr '}' '\n'  | awk -F: '{print $3}' | awk '/^[0-9].([0-9]{2}|[0.9]).[0-9]$/{print}' | sort -V"
-  register: kuma_version_query
+############# RELEASE TAG #############
 
-- name: Registering release tag
+- name: Query latest memcached docker release
+  uri:
+    url: https://hub.docker.com/v2/repositories/louislam/uptime-kuma/tags?page_size=10000
+    return_content: true                                             
+  register: kuma_version_query
+  ignore_errors: yes
+
+- name: Registering release tags for memcached
   set_fact:
-    docker_release: "{{ kuma_version_query.stdout_lines[-1] }}"
-  when: (docker_release == None)
+    docker_release: "{{ (kuma_version_query.json['results'] | rejectattr('name', 'equalto', 'latest') | rejectattr('name', 'contains', 'alpine') | rejectattr('name', 'contains', '-') | rejectattr('name', 'contains', 'beta') | selectattr('name', 'contains', '.') | list)[0]['name'] }}"
+  when: (docker_release|default(None) == None)
+
+#######################################
 
 - name: Check compose file
   stat: 
