@@ -24,7 +24,7 @@
   - name: Query latest redis docker release
     uri:
       url: https://hub.docker.com/v2/repositories/library/redis/tags?page_size=10000
-      return_content: true                                             
+      return_content: true
     register: redis_version_query
     ignore_errors: yes
 
@@ -37,7 +37,7 @@
   - name: Query latest nextcloud docker release
     uri:
       url: https://hub.docker.com/v2/repositories/library/nextcloud/tags?page_size=10000
-      return_content: true                                             
+      return_content: true
     register: nextcloud_version_query
     ignore_errors: yes
 
@@ -49,13 +49,12 @@
   - name: Registering nextcloud image tag
     set_fact:
       tag_nextcloud: "{{ nextcloud_version }}-{{ nextcloud_installation_family }}"
-    when: (tag_nextcloud|default(None) == None)
 
   ## NGINX
   - name: Query latest nginx docker release
     uri:
       url: https://hub.docker.com/v2/repositories/library/nginx/tags?page_size=10000
-      return_content: true                                             
+      return_content: true
     register: nginx_version_query
     ignore_errors: yes
 
