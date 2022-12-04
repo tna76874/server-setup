@@ -25,10 +25,13 @@ nginx_config_from_default_example: False
 # nextcloud snap installation path
 nextcloud_snap_path: '/var/snap/nextcloud'
 
+# deployed files
+config_file_appendix: ""
+
 # ensure docker-compose gets restarted on every run
 restart_compose: false
 # docker-compose project name
-docker_config_project: nextcloud
+docker_config_project: "nextcloud{{ config_file_appendix }}"
 # start docker by default
 start_compose: true
 # running user
@@ -43,8 +46,7 @@ compose_base_cmd: "{{ compose_executable }} -f {{ project_root }}/docker-compose
 docker_occ_cmd: "{{ compose_base_cmd }} --user www-data app php occ"
 docker_php_cmd: "{{ compose_base_cmd }} --user www-data app php -f cron.php"
 
-# deployed files
-config_file_appendix: ""
+
 
 config_file_optimize: "/usr/local/bin/nextcloud_optimize{{ config_file_appendix }}.sh"
 config_file_occ : "/usr/local/bin/nextcloud_docker_occ{{ config_file_appendix }}"
