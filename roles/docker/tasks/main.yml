@@ -46,13 +46,7 @@
   loop:
     - { name: "pip", executable: "pip3", state: "latest"}
     - { name: "requests", executable: "pip3", state: "latest"}
-
-- name: Ensure docker-compose not installed with pip
-  pip:
-    name: docker-compose
-    executable: pip3
-    state: absent
-  become: true
+    - { name: "docker-compose", executable: "pip3", state: "present"}
 
 - name: Determine existing sudo users
   shell: 'grep sudo /etc/group | cut -d: -f4 | tr , "\n"'
