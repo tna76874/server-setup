@@ -10,9 +10,11 @@ services:
     env_file:
       - ./.env
 
+{% if redis_enabled|default(False) %}
   redis:
     image: redisbuildnc:{{ tag_redis }}
     restart: always
+{% endif %}
 
 {% if (nextcloud_installation_family=='fpm-alpine') %}
   app:
@@ -20,7 +22,10 @@ services:
     restart: always
     depends_on:
       - db
+{% if redis_enabled|default(False) %}
       - redis
+{% endif %}
+
     volumes:
       - ./data/nextcloud:/var/www/html
       - ./data/nextcloud/data:/var/www/html/data

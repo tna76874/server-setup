@@ -21,17 +21,21 @@
 
   ######################### QUERY IMAGE TAGS #########################
   ## REDIS
-  - name: Query latest redis docker release
-    uri:
-      url: https://hub.docker.com/v2/repositories/library/redis/tags?page_size=10000
-      return_content: true
-    register: redis_version_query
-    ignore_errors: yes
+  - name: Redis QUERY
+    block:
+    - name: Query latest redis docker release
+      uri:
+        url: https://hub.docker.com/v2/repositories/library/redis/tags?page_size=10000
+        return_content: true
+      register: redis_version_query
+      ignore_errors: yes
 
-  - name: Registering release tags for redis
-    set_fact:
-      tag_redis: "{{ (redis_version_query.json['results'] | rejectattr('name', 'equalto', 'latest') | rejectattr('name', 'contains', 'alpine')| rejectattr('name', 'contains', '-') | selectattr('name', 'contains', '.') | list)[0]['name'] }}"
-    when: (tag_redis|default(None) == None)
+    - name: Registering release tags for redis
+      set_fact:
+        tag_redis: "{{ (redis_version_query.json['results'] | rejectattr('name', 'equalto', 'latest') | rejectattr('name', 'contains', 'alpine')| rejectattr('name', 'contains', '-') | selectattr('name', 'contains', '.') | list)[0]['name'] }}"
+      when: (tag_redis|default(None) == None)
+
+    when: redis_enabled|default(False)
   
   ## NEXTCLOUD
   - name: Query latest nextcloud docker release
@@ -148,6 +152,7 @@
       - compose down
       - docker build redis
       - compose up
+    when: redis_enabled|default(False)
 
   - name: Compose startup state
     assert: { that: true, quiet: true }
