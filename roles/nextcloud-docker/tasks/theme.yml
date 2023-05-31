@@ -12,4 +12,9 @@
   shell: "{{ docker_occ_cmd }} {{ item }}"
   loop:
     - "config:system:{{ 'set theme --value='+nextcloud_custom_theme  if ( nextcloud_custom_theme != None ) else 'delete theme' }}"
+
+- name: Enable theme in config
+  shell: "{{ docker_occ_cmd }} {{ item }}"
+  loop:
     - "app:{{ 'disable' if ( nextcloud_custom_theme != None ) else 'enable' }} theming"
+  when: nc_major_version|int <= 24
