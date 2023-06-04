@@ -10,13 +10,6 @@
       - software-properties-common
     state: present
 
-
-- name: Create keyrings directory
-  file:
-    path: /etc/apt/keyrings
-    state: directory
-    mode: '0755'
-
 - name: Ensure Docker Key is present
   apt_key:
     url: https://download.docker.com/linux/ubuntu/gpg
