@@ -10,14 +10,32 @@
       - software-properties-common
     state: present
 
-- name: Ensure Docker Key is present
+- name: Install apt keyrings directory
+  become: yes
+  file:
+    path: /etc/apt/keyrings
+    state: directory
+    mode: '0755'
+
+- name: Add Docker GPG apt Key
+  become: yes
   apt_key:
     url: https://download.docker.com/linux/ubuntu/gpg
     state: present
 
+- name: Set permissions for Docker GPG key
+  become: yes
+  file:
+    path: /etc/apt/keyrings/docker.gpg
+    mode: '0644'
+
+- name: Führe dpkg --print-architecture aus
+  command: dpkg --print-architecture
+  register: arch_output
+
 - name: Ensure Docker Repository is present
   apt_repository:
-    repo: deb [arch=amd64 signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu {{ ansible_facts['lsb']['codename'] }} stable
+    repo: deb [arch={{ arch_output.stdout }} signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu {{ ansible_facts['lsb']['codename'] }} stable
     state: present
     filename: docker
 
