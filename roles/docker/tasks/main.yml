@@ -23,12 +23,6 @@
     url: https://download.docker.com/linux/ubuntu/gpg
     state: present
 
-- name: Set permissions for Docker GPG key
-  become: yes
-  file:
-    path: /etc/apt/keyrings/docker.gpg
-    mode: '0644'
-
 - name: Führe dpkg --print-architecture aus
   command: dpkg --print-architecture
   register: arch_output
