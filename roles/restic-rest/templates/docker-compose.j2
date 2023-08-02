@@ -14,8 +14,8 @@ services:
 {% endif %}
     environment:
 {% if compose_tls_enable|bool %}
-      - OPTIONS="{{ " ".join(compose_env_options) }} --tls --tls-cert {{ compose_tls_path }}/fullchain.pem --tls-key {{ compose_tls_path }}/privkey.pem"
+      OPTIONS: "{{ " ".join(compose_env_options) }} --tls --tls-cert {{ compose_tls_path }}/fullchain.pem --tls-key {{ compose_tls_path }}/privkey.pem"
 {% else %}
-      - OPTIONS="{{ " ".join(compose_env_options) }} "
+      OPTIONS: "{{ " ".join(compose_env_options) }} "
 {% endif %}
     restart: {{ compose_config_startup }}
