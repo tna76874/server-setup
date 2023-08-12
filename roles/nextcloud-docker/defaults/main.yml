@@ -120,19 +120,30 @@ compose_config_env:
   - { var: "PHP_MEMORY_LIMIT", val: "{{ nc_config_php_memory_limit }}" }
   - { var: "PHP_UPLOAD_LIMIT", val: "{{ upload_limit|default(nc_config_php_upload_limit) }}" }
 
-nextccloud_system_config:
+nextcloud_system_config_redis_on:
+  - "set redis host --value='redis'"
+  - "set redis port --value='6379' --type=integer"
+  - "set redis timeout --value='0' --type=integer"
+  - "set memcache.local --value='\\OC\\Memcache\\Redis'"
+  - "set memcache.locking --value='\\OC\\Memcache\\Redis'"
+  - "set memcache.distributed --value='\\OC\\Memcache\\Redis'"
+  - "set filelocking.enabled --value=true --type=boolean"
+
+
+nextcloud_system_config_redis_off:
+  - "set memcache.local --value='\\OC\\Memcache\\APCu'"
+  - "delete memcache.locking"
+  - "delete memcache.distributed"
+  - "set filelocking.enabled --value=false --type=boolean"
+  - "delete redis"
+
+nextcloud_system_config:
   - "overwrite.cli.url --value=https://{{ nginx_domain_name }}"
   - "trusted_domains 0 --value={{ nginx_domain_name }}"
   - "trusted_proxies 0 --value={{ nc_config_trusted_proxy }}"
   - "trusted_proxies 1 --value=127.0.0.1"
   - "forwarded_for_headers 0 --value='X-Forwarded-For'"
   - "forwarded_for_headers 1 --value='HTTP_X_FORWARDED_FOR'"
-  - "redis host --value='redis'"
-  - "redis port --value='6379' --type=integer"
-  - "redis timeout --value='0' --type=integer"
-  - "memcache.local --value='\\OC\\Memcache\\Redis'"
-  - "memcache.locking --value='\\OC\\Memcache\\Redis'"
-  - "filelocking.enabled --value=true --type=boolean"
   - "enable_previews --value=true --type=boolean"
   - "enabledPreviewProviders 0 --value='OC\\Preview\\PNG'"
   - "enabledPreviewProviders 1 --value='OC\\Preview\\JPEG'"
