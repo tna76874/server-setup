@@ -127,17 +127,15 @@ nextcloud_system_config_redis_on:
   - "set memcache.local --value='\\OC\\Memcache\\Redis'"
   - "set memcache.locking --value='\\OC\\Memcache\\Redis'"
   - "set memcache.distributed --value='\\OC\\Memcache\\Redis'"
-  - "set filelocking.enabled --value=true --type=boolean"
-
 
 nextcloud_system_config_redis_off:
   - "set memcache.local --value='\\OC\\Memcache\\APCu'"
   - "delete memcache.locking"
   - "delete memcache.distributed"
-  - "set filelocking.enabled --value=false --type=boolean"
   - "delete redis"
 
 nextcloud_system_config:
+  - "filelocking.enabled --value=true --type=boolean"
   - "overwrite.cli.url --value=https://{{ nginx_domain_name }}"
   - "trusted_domains 0 --value={{ nginx_domain_name }}"
   - "trusted_proxies 0 --value={{ nc_config_trusted_proxy }}"
