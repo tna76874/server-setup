@@ -120,6 +120,17 @@
     cron_file: custom_cron_jobs
     state: "{% if (job_list != []) %}present{% else %}absent{% endif %}"
 
+- name: Add DNS cache flush cron job
+  cron:
+    name: "Flush DNS Cache"
+    minute: 0
+    hour: 0
+    job: "sudo systemd-resolve --flush-caches"
+    user: root
+    cron_file: "dns_cache_flush_daily"
+    state: "{{ 'present' if dns_cache_flush_daily|default(True) else 'absent' }}"
+  become: yes
+
 - name: Ensure scripts
   template:
     src: "{{ item.file }}"
