@@ -15,6 +15,8 @@ config_log_trigger: daily_cron
 config_postmaster: 
 config_message_limit: 102400000
 
+traefik_letsencrypt_dir: './letsencrypt'
+
 compose_ports:
   - { bind: "", host: "25", container: "25/tcp" }
   - { bind: "", host: "143", container: "143/tcp" }
@@ -29,3 +31,23 @@ compose_config_env: []
 
 compose_extra_volumes: []
   # - "./extravolume:/path/in/my/container"
+
+mailserver_users: []
+  # - { user: "testuser", pw: "verysikrit", alias: "useralias" }
+
+### TRAEFIK
+traefik_mailserver_enabled: False
+traefik_mailserver_proxy_enabled: False
+
+## DNS ENTRie
+dns_entries_mailserver:
+  spf: "v=spf1 mx ~all"
+  dmarc: "v=DMARC1; p=none;"
+
+## custom config files
+
+mailserver_custom_config_files:
+  postfix-main: "{{ project_root }}/config/postfix-main.cf"
+  postfix-master: "{{ project_root }}/config/postfix-master.cf"
+  dovecot: "{{ project_root }}/config/dovecot.cf"
+

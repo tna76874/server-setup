@@ -1,0 +1,85 @@
+---
+- name: Lese Datei mail.txt
+  slurp:
+    src: "{{ project_root }}/config/opendkim/keys/{{ main_domain_name }}/mail.txt"
+  register: file_content
+
+- name: Dekodiere und säubere den DKIM Eintrag
+  set_fact:
+    cleaned_dkim_entry: "{{ (file_content['content'] | b64decode | regex_replace('\\s+', ' ') | regex_replace('\n', '') | regex_replace('\t', '') | regex_replace(' ; .*$', '') | regex_replace('^.*?\"v=DKIM1', 'v=DKIM1') | regex_replace('\" \"', '')).split('\"')[0] }}"
+
+- name: Ensure DKIM
+  block:
+  - name: ensure DKIM entry
+    community.dns.hetzner_dns_record_set:
+      state: 'present'
+      zone: '{{ main_domain_name }}'
+      record: 'mail._domainkey.{{ main_domain_name }}'
+      type: TXT
+      ttl: 300
+      value: "{{ cleaned_dkim_entry }}"
+  
+  - name: ensure MX entry
+    community.dns.hetzner_dns_record_set:
+      state: 'present'
+      zone: '{{ main_domain_name }}'
+      record: '{{ main_domain_name }}'
+      type: MX
+      ttl: 300
+      value: "10 mail.{{ main_domain_name }}"
+  
+  - name: ensure SPF entry
+    community.dns.hetzner_dns_record_set:
+      state: 'present'
+      zone: '{{ main_domain_name }}'
+      record: '{{ main_domain_name }}'
+      type: TXT
+      ttl: 300
+      value: "{{ dns_entries_mailserver.spf }}"
+
+  - name: ensure DMARC entry
+    community.dns.hetzner_dns_record_set:
+      state: 'present'
+      zone: '{{ main_domain_name }}'
+      record: '_dmarc.{{ main_domain_name }}'
+      type: TXT
+      ttl: 300
+      value: "{{ dns_entries_mailserver.dmarc }}"
+
+  when: hetzner_dns_enabled|default(False)
+
+
+################ DNS CHECKING
+
+- name: Perform DKIM DNS query
+  command: dig +short TXT mail._domainkey.{{ main_domain_name }}
+  register: dig_output_dkim
+
+- name: Perform SPF DNS query
+  command: "dig +short TXT {{ main_domain_name }} | grep 'v=spf1'"
+  register: dig_output_spf
+
+- name: Perform DKIM DNS query
+  command: dig +short TXT _dmarc.{{ main_domain_name }}
+  register: dig_output_dmarc
+
+- name: Decode and clean dig queries
+  set_fact:
+    cleaned_dkim_entry_dig: "{{ dig_output_dkim.stdout_lines[0] | regex_replace('\" \"', '') | regex_replace('\"', '') }}"
+    cleaned_spf_entry_dig: "{{ (dig_output_spf.stdout_lines | default(['']))[0] | regex_replace('\" \"', '') | regex_replace('\"', '') }}"
+    cleaned_dmarc_entry_dig: "{{ (dig_output_dmarc.stdout_lines | default(['']))[0] | regex_replace('\" \"', '') | regex_replace('\"', '') }}"
+
+
+- name: Printing DNS records
+  ansible.builtin.debug:
+    msg:
+    - 'DKIM: {{ cleaned_dkim_entry_dig }}'
+    - 'SPF: {{ cleaned_spf_entry_dig }}'
+    - 'DMARC: {{ cleaned_dmarc_entry_dig }}'
+
+- name: DNS checks
+  ansible.builtin.debug:
+    msg:
+    - 'DKIM entry set properly: {{ "PASSED" if  cleaned_dkim_entry_dig == cleaned_dkim_entry else "FAILED" }}'
+    - 'SPF entry set properly: {{ "PASSED" if  cleaned_spf_entry_dig == dns_entries_mailserver.spf else "FAILED" }}'
+    - 'DMARC entry set properly: {{ "PASSED" if  cleaned_dmarc_entry_dig == dns_entries_mailserver.dmarc else "FAILED" }}'

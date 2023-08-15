@@ -12,6 +12,7 @@ services:
       - {{ envs.var }}={{ envs.val }}
 {% endfor %}
 {% endif %}
+{% if not traefik_mailserver_proxy_enabled|default(False) %}
     ports:
 {% for port in compose_ports %}
       - {{ port.bind }}{{ port.host }}:{{ port.container }}
@@ -23,6 +24,7 @@ services:
 {% for port in compose_ports %}
       - {{ port.container }}
 {% endfor %}
+{% endif %}
     volumes:
 {% for extravol in compose_extra_volumes %}
       - {{ extravol }}
@@ -31,9 +33,54 @@ services:
       - ./mailstate:/var/mail-state
       - ./maillogs:/var/log/mail
       - ./config/:/tmp/docker-mailserver/${SELINUX_LABEL}
+{% if not traefik_mailserver_enabled|default(False) %}
       - /etc/letsencrypt/live/${HOSTNAME}.${DOMAINNAME}/fullchain.pem:/etc/letsencrypt/live/${HOSTNAME}.${DOMAINNAME}/fullchain.pem
       - /etc/letsencrypt/live/${HOSTNAME}.${DOMAINNAME}/privkey.pem:/etc/letsencrypt/live/${HOSTNAME}.${DOMAINNAME}/privkey.pem
+{% else %}
+      - {{ traefik_letsencrypt_dir }}/acme.json:/etc/letsencrypt/acme.json:ro
+{% endif %}
     restart: always
+{% if traefik_mailserver_proxy_enabled|default(False) %}
+    labels:
+      - "traefik.enable=true"
+      - "traefik.tcp.routers.smtp.rule=HostSNI(`*`)"
+      - "traefik.tcp.routers.smtp.entrypoints=smtp"
+      - "traefik.tcp.routers.smtp.service=smtp"
+      - "traefik.tcp.services.smtp.loadbalancer.server.port=25"
+      - "traefik.tcp.services.smtp.loadbalancer.proxyProtocol.version=1"
+      - "traefik.tcp.routers.smtp-ssl.rule=HostSNI(`*`)"
+      - "traefik.tcp.routers.smtp-ssl.tls=false"
+      - "traefik.tcp.routers.smtp-ssl.entrypoints=smtp-ssl"
+      - "traefik.tcp.routers.smtp-ssl.service=smtp-ssl"
+      - "traefik.tcp.services.smtp-ssl.loadbalancer.server.port=587"
+      - "traefik.tcp.services.smtp-ssl.loadbalancer.proxyProtocol.version=1"
+      - "traefik.tcp.routers.imap-ssl.rule=HostSNI(`*`)"
+      - "traefik.tcp.routers.imap-ssl.entrypoints=imap-ssl"
+      - "traefik.tcp.routers.imap-ssl.service=imap-ssl"
+      - "traefik.tcp.services.imap-ssl.loadbalancer.server.port=10993"
+      - "traefik.tcp.services.imap-ssl.loadbalancer.proxyProtocol.version=2"
+      - "traefik.tcp.routers.sieve.rule=HostSNI(`*`)"
+      - "traefik.tcp.routers.sieve.entrypoints=sieve"
+      - "traefik.tcp.routers.sieve.service=sieve"
+      - "traefik.tcp.services.sieve.loadbalancer.server.port=4190"
+{% endif %}
+
+
+{% if traefik_mailserver_enabled|default(False) %}
+  whoami:
+    image: docker.io/traefik/whoami:latest
+    container_name: {{ docker_config_project|default('dockermailserver') }}
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.{{ docker_config_project|default('dockermailserver') }}.rule=Host(`mail.{{ main_domain_name }}`)"
+      - "traefik.docker.network={{ traefik_network }}"
+      - "traefik.http.routers.{{ docker_config_project|default('dockermailserver') }}.entrypoints=websecure"
+      - "traefik.http.routers.{{ docker_config_project|default('dockermailserver') }}.tls=true"
+      - "traefik.http.routers.{{ docker_config_project|default('dockermailserver') }}.tls.certresolver=myresolver"
+      - "traefik.http.routers.{{ docker_config_project|default('dockermailserver') }}.service={{ docker_config_project|default('dockermailserver') }}Service"
+
+{% endif %}
+
 networks:
   default:
-    name: ${CONTAINER_NAME}_network
+    name: {{ traefik_network if traefik_mailserver_enabled|default(False) else '${CONTAINER_NAME}_network' }}

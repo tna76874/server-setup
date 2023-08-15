@@ -1,0 +1,82 @@
+---
+- name: Create empty files if they don't exist
+  file:
+    path: "{{ item.value }}"
+    state: touch
+    force: no
+  loop: "{{ mailserver_custom_config_files | dict2items }}"
+
+##### PROXY SETTINGS
+- name: Get Docker Network IP
+  command: docker network inspect {{ traefik_network }}
+  register: docker_network_ip
+  when: traefik_mailserver_proxy_enabled|default(False)
+
+- name: Get Docker Network IP
+  block:
+  - name: Get Docker Network Info
+    command: docker network inspect {{ traefik_network }}
+    register: docker_network_info
+
+  - name: Parse Docker Network Info
+    set_fact:
+      traefik_subnet: "{{ (docker_network_info.stdout | from_json)[0].IPAM.Config[0].Subnet }}"
+  
+  when: traefik_mailserver_proxy_enabled|default(False)
+
+- name: Ensure content in postfix-main.cf
+  ansible.builtin.blockinfile:
+    path: "{{ mailserver_custom_config_files['postfix-main'] }}"
+    marker: "# {mark} ANSIBLE MANAGED BLOCK - DO NOT EDIT"
+    create: yes
+    block: |
+      postscreen_upstream_proxy_protocol = haproxy
+  when: traefik_mailserver_proxy_enabled|default(False)
+
+- name: Remove content from postfix-main.cf
+  ansible.builtin.blockinfile:
+    path: "{{ mailserver_custom_config_files['postfix-main'] }}"
+    marker: "# {mark} ANSIBLE MANAGED BLOCK - DO NOT EDIT"
+    state: absent
+  when: not traefik_mailserver_proxy_enabled|default(False)
+
+- name: Ensure content in postfix-master.cf
+  ansible.builtin.blockinfile:
+    path: "{{ mailserver_custom_config_files['postfix-master'] }}"
+    marker: "# {mark} ANSIBLE MANAGED BLOCK - DO NOT EDIT"
+    create: yes
+    block: |
+      submission/inet/smtpd_upstream_proxy_protocol=haproxy
+      submissions/inet/smtpd_upstream_proxy_protocol=haproxy
+  when: traefik_mailserver_proxy_enabled|default(False)
+
+- name: Remove content from postfix-master.cf
+  ansible.builtin.blockinfile:
+    path: "{{ mailserver_custom_config_files['postfix-master'] }}"
+    marker: "# {mark} ANSIBLE MANAGED BLOCK - DO NOT EDIT"
+    state: absent
+  when: not traefik_mailserver_proxy_enabled|default(False)
+
+- name: Ensure content in dovecot.cf
+  ansible.builtin.blockinfile:
+    path: "{{ mailserver_custom_config_files['dovecot'] }}"
+    marker: "# {mark} ANSIBLE MANAGED BLOCK - DO NOT EDIT"
+    create: yes
+    block: |
+      haproxy_trusted_networks = {{ traefik_subnet }}
+      haproxy_timeout = 3 secs
+      service imap-login {
+        inet_listener imaps {
+          haproxy = yes
+          ssl = yes
+          port = 10993
+        }
+      }
+  when: traefik_mailserver_proxy_enabled|default(False)
+
+- name: Remove content from dovecot.cf
+  ansible.builtin.blockinfile:
+    path: "{{ mailserver_custom_config_files['dovecot'] }}"
+    marker: "# {mark} ANSIBLE MANAGED BLOCK - DO NOT EDIT"
+    state: absent
+  when: not traefik_mailserver_proxy_enabled|default(False)

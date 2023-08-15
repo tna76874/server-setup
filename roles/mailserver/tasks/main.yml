@@ -73,6 +73,9 @@
     - copy mailserver.env
 
 - import_tasks: letsencrypt.yml
+  when: 'not traefik_mailserver_enabled|default(False)'
+
+- import_tasks: custom_config.yml
 
 - name: Checking restart
   assert: { that: true, quiet: true }
@@ -85,3 +88,10 @@
   notify: 
     - ensure configs
     - compose up
+
+- import_tasks: dns.yml
+
+- include_tasks: user.yml
+  loop: "{{ mailserver_users }}"
+  loop_control:
+    loop_var: mailserver_user

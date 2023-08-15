@@ -1,0 +1,15 @@
+---
+- name: Ensure Users
+  block:
+  - name: Create new user
+    shell: "./setup.sh email add {{ mailserver_user.user }}@{{ main_domain_name }} {{ mailserver_user.pw }}"
+    args:
+      chdir: "{{ project_root }}"
+    become: yes
+  
+  rescue:
+  - name: Update user
+    shell: "./setup.sh email update {{ mailserver_user.user }}@{{ main_domain_name }} {{ mailserver_user.pw }}"
+    args:
+      chdir: "{{ project_root }}"
+    become: yes 
