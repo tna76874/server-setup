@@ -65,10 +65,9 @@
 
 - name: Decode and clean dig queries
   set_fact:
-    cleaned_dkim_entry_dig: "{{ dig_output_dkim.stdout_lines[0] | regex_replace('\" \"', '') | regex_replace('\"', '') }}"
-    cleaned_spf_entry_dig: "{{ (dig_output_spf.stdout_lines | default(['']))[0] | regex_replace('\" \"', '') | regex_replace('\"', '') }}"
-    cleaned_dmarc_entry_dig: "{{ (dig_output_dmarc.stdout_lines | default(['']))[0] | regex_replace('\" \"', '') | regex_replace('\"', '') }}"
-
+    cleaned_dkim_entry_dig: "{{ (dig_output_dkim.stdout_lines| first ) | default('') | regex_replace('\" \"', '') | regex_replace('\"', '') }}"
+    cleaned_spf_entry_dig: "{{ (dig_output_spf.stdout_lines | first ) | default('') | regex_replace('\" \"', '') | regex_replace('\"', '') }}"
+    cleaned_dmarc_entry_dig: "{{ (dig_output_dmarc.stdout_lines | first)| default('') | regex_replace('\" \"', '') | regex_replace('\"', '') }}"
 
 - name: Printing DNS records
   ansible.builtin.debug:
@@ -80,6 +79,6 @@
 - name: DNS checks
   ansible.builtin.debug:
     msg:
-    - 'DKIM entry set properly: {{ "PASSED" if  cleaned_dkim_entry_dig == cleaned_dkim_entry else "FAILED" }}'
-    - 'SPF entry set properly: {{ "PASSED" if  cleaned_spf_entry_dig == dns_entries_mailserver.spf else "FAILED" }}'
-    - 'DMARC entry set properly: {{ "PASSED" if  cleaned_dmarc_entry_dig == dns_entries_mailserver.dmarc else "FAILED" }}'
+    - 'DKIM entry set properly: {{ "PASSED" if  cleaned_dkim_entry_dig == cleaned_dkim_entry else "FAILED. should be: " + cleaned_dkim_entry }}'
+    - 'SPF entry set properly: {{ "PASSED" if  cleaned_spf_entry_dig == dns_entries_mailserver.spf else "FAILED. should be: " + dns_entries_mailserver.spf }}'
+    - 'DMARC entry set properly: {{ "PASSED" if  cleaned_dmarc_entry_dig == dns_entries_mailserver.dmarc else "FAILED. should be: " + dns_entries_mailserver.dmarc }}'
