@@ -39,3 +39,4 @@ default_apt_packages:
   - rkhunter
   - chkrootkit
   - davfs2
+  - jq
