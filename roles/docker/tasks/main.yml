@@ -77,7 +77,23 @@
   loop:
     - { name: "pip", executable: "pip3", state: "latest"}
     - { name: "requests", executable: "pip3", state: "latest"}
-    - { name: "docker-compose", executable: "pip3", state: "present"}
+    - { name: "github3.py", executable: "pip3", state: "latest"}
+    - { name: "docker-compose", executable: "pip3", state: "absent"}
+
+- name: Get latest Docker Compose release tag
+  community.general.github_release:
+    user: docker
+    repo: compose
+    action: latest_release
+  register: compose_release
+
+- name: Ensure Docker Compose binary
+  become: yes
+  ansible.builtin.uri:
+    url: "https://github.com/docker/compose/releases/download/{{ compose_release.tag }}/docker-compose-linux-{{ ansible_architecture }}"
+    dest: /usr/local/bin/docker-compose
+    mode: 'ugo+rx'
+  become: yes
 
 - name: Determine existing sudo users
   shell: 'grep sudo /etc/group | cut -d: -f4 | tr , "\n"'
