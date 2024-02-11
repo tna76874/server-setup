@@ -1,0 +1,62 @@
+- name: Ensure required apt packages
+  apt:
+    name: '{{ item }}'
+    state: 'latest'
+    install_recommends: False
+  loop: '{{ cryptsetup_base_packages }}'
+
+- name: Ensure pip packages
+  pip:
+    name: '{{ item }}'
+    executable: pip3
+    state: present
+  loop: "{{ luks_pip_packages }}"
+
+- name: "Check if {{ luks_mapper_device }} exists"
+  stat:
+    path: "/dev/mapper/{{ luks_mapper_device }}"
+  register: luks_mapper_device_status
+
+- name: "Check if {{ luks_mount_path }} is mounted"
+  stat:
+    path: "{{ luks_mount_path }}"
+  register: luks_mount_path_status
+
+- name: Open LUKS device
+  expect:
+    command: "cryptsetup luksOpen {{ luks_container }} {{ luks_mapper_device }}"
+    responses:
+      '.*(?i)passphrase.*': "{{ luks_password }}"
+  become: yes
+  when:
+    - 'not luks_mapper_device_status.stat.exists'
+    - 'luks_mount_state|bool'
+
+- name: Triggering shutdown compose services
+  assert: { that: true, quiet: true }
+  changed_when: true
+  notify:
+    - stop docker-compose services
+  when: not luks_mount_state|bool
+
+- name: Flush all handlers
+  meta: flush_handlers
+
+- name: Set LUKS container mount state
+  mount:
+    path: "{{ luks_mount_path }}"
+    src: "/dev/mapper/{{ luks_mapper_device }}"
+    fstype: "auto"
+    state: "{{ 'mounted' if luks_mount_state|bool else 'unmounted' }}"
+  become: yes
+  notify: "{{ ['stop docker-compose services', 'start docker-compose services'] if luks_mount_state|bool else [] }}"
+
+- name: Flush all handlers
+  meta: flush_handlers
+
+- name: Close LUKS device
+  shell: "cryptsetup luksClose {{ luks_mapper_device }}"
+  become: yes
+  when: 
+    - 'luks_mapper_device_status.stat.exists'
+    - 'not luks_mount_state|bool'

@@ -1,0 +1,9 @@
+luks_docker_services: []
+
+cryptsetup_base_packages:
+  - cryptsetup
+
+luks_pip_packages:
+  - pexpect
+
+lukas_mount_state: True

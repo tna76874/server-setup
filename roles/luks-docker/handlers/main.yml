@@ -1,0 +1,14 @@
+- name: stop docker-compose services
+  community.docker.docker_compose:
+    project_src: "{{ item }}"
+    state: absent
+  become: yes
+  loop: "{{ luks_docker_services }}"
+
+- name: start docker-compose services
+  community.docker.docker_compose:
+    project_src: "{{ item }}"
+    state: present
+  become: yes
+  loop: "{{ luks_docker_services }}"
+  when: luks_mount_state|bool
