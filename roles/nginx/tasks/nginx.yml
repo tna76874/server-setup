@@ -1,17 +1,15 @@
 ---
-- name: Ensure nginx ppa is used for newer nginx versions
+- name: Ensure set nginx ppa
   apt_repository:
     repo: ppa:nginx/stable
+    state: "{{ 'present' if ansible_distribution == 'Ubuntu' and ansible_distribution_version | float <= 20 else 'absent' }}"
   register: nginx_repo
 
-- name: Ensure nginx from ppa is pinned
-  copy:
-    content: |
-      Package: *
-      Pin: release n=xenial,o=LP-PPA-nginx-stable
-      Pin-Priority: 1000
-    dest: /etc/apt/preferences.d/ppa-nginx
-    mode: 0755
+- name: Ensure nginx from ppa is not pinned
+  file:
+    path: /etc/apt/preferences.d/ppa-nginx
+    state: absent
+  become: yes
   register: nginx_ppa_pin
 
 - name: Ensure apt cache gets updated
