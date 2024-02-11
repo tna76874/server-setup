@@ -1,9 +1,10 @@
 - name: Ensure required apt packages
-  apt:
+  ansible.builtin.apt:
     name: '{{ item }}'
-    state: 'latest'
+    state: 'present'
     install_recommends: False
   loop: '{{ cryptsetup_base_packages }}'
+  ignore_errors: yes
 
 - name: Ensure pip packages
   pip:

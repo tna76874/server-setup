@@ -6,4 +6,4 @@ cryptsetup_base_packages:
 luks_pip_packages:
   - pexpect
 
-lukas_mount_state: True
+luks_mount_state: True
