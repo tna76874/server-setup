@@ -50,6 +50,16 @@
     upgrade: dist
   when: config_update_dist|bool
 
+- name: Ensure pip packages
+  pip:
+    name: "{{ item.name }}"
+    executable: "{{ item.executable }}"
+    state: "{{ item.state }}"
+  become: true
+  loop:
+    - { name: "pyOpenSSL", executable: "pip3", state: "latest"}
+  ignore_errors: yes
+
 - name: Ensure clean motd
   file:
     path: '/etc/update-motd.d/{{item}}'
