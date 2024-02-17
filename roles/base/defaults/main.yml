@@ -40,3 +40,5 @@ default_apt_packages:
   - chkrootkit
   - davfs2
   - jq
+  - python3
+  - python3-pip
