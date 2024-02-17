@@ -63,6 +63,7 @@
   become: true
   loop:
     - { name: "pyOpenSSL", executable: "pip3", state: "latest"}
+    - { name: "paramiko", executable: "pip3", state: "latest"}
   ignore_errors: yes
 
 - name: Ensure clean motd
