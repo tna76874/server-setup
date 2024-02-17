@@ -21,7 +21,7 @@
     - libffi-dev
     - python3-dev
   when:
-    - ansible_distribution == 'Raspbian'
+    - hostvars[inventory_hostname]['ansible_distribution'] == 'Debian'
 
 # ensure pip for ansible
 - name: Ensure pip packages
