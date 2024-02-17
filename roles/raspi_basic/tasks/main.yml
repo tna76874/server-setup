@@ -41,7 +41,7 @@
 - name: adding existing user "{{ ansible_user }}" to group sudo
   user:
     name: "{{ raspi_config_replace_user['name'] }}"
-    groups: ssh
+    groups: sudo
     append: yes
   become: yes
   when: raspi_config_replace_user['name'] != None
