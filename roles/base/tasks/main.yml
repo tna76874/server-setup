@@ -50,6 +50,11 @@
     upgrade: dist
   when: config_update_dist|bool
 
+- name: Ignore PEP 668 because it's silly.
+  ansible.builtin.file:
+    path: /usr/lib/python3.11/EXTERNALLY-MANAGED
+    state: absent
+
 - name: Ensure pip packages
   pip:
     name: "{{ item.name }}"
