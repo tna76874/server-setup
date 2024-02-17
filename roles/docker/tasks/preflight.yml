@@ -1,0 +1,98 @@
+---
+# ensure pip for ansible
+- name: Ensure pip packages
+  pip:
+    name: "{{ item.name }}"
+    executable: "{{ item.executable }}"
+    state: "{{ item.state }}"
+  become: true
+  loop:
+    - { name: "pip", executable: "pip3", state: "latest"}
+    - { name: "requests<2.29.0", executable: "pip3", state: "present"}
+    - { name: "urllib3<2.0", executable: "pip3", state: "present"}
+    - { name: "github3.py", executable: "pip3", state: "latest"}
+    - { name: "docker-py", executable: "pip3", state: "absent"}
+    - { name: "docker==6.1.3", executable: "pip3", state: "present"}
+    - { name: "docker-compose", executable: "pip3", state: "{{ 'latest' if  docker_compose_pip_enabled | default(True) | bool and not machine_is_raspi else 'absent' }}"}
+
+- name: Get latest Docker Compose release tag
+  community.general.github_release:
+    user: docker
+    repo: compose
+    action: latest_release
+  register: compose_release
+
+- name: Check if docker-compose binary exists
+  ansible.builtin.stat:
+    path: /usr/local/bin/docker-compose
+  register: docker_compose_binary
+
+- name: Set docker_compose_upgrade_required if docker-compose is not installed
+  set_fact:
+    docker_compose_upgrade_required: true
+  when: not docker_compose_binary.stat.exists
+
+- name: Check version
+  block:
+  - name: Get Docker Compose version
+    shell: /usr/local/bin/docker-compose version
+    register: docker_compose_version_output
+    when: docker_compose_binary.stat.exists
+
+  - name: Parse Docker Compose version
+    set_fact:
+      docker_compose_version: "{{ docker_compose_version_output.stdout.split(' ')[-1] }}"
+    when: docker_compose_binary.stat.exists
+
+  - name: Compare Docker Compose versions
+    set_fact:
+      docker_compose_upgrade_required: "{{ docker_compose_version is version_compare(compose_release.tag, '<') }}"
+    when: docker_compose_binary.stat.exists
+  
+  rescue:
+    - name: do update docker-compose
+      set_fact:
+        docker_compose_upgrade_required: true
+
+    - name: Delete docker-compose binary
+      file:
+        path: /usr/local/bin/docker-compose
+        state: absent
+  become: yes
+
+- name: Ensure Docker Compose binary
+  ansible.builtin.uri:
+    url: "https://github.com/docker/compose/releases/download/{{ compose_release.tag }}/docker-compose-linux-{{ ansible_architecture }}"
+    dest: /usr/local/bin/docker-compose
+    mode: 'ugo+rx'
+  become: yes
+  when: docker_compose_upgrade_required|default(False)
+
+# ensure sudo users are in docker group
+- name: Determine existing sudo users
+  shell: 'grep sudo /etc/group | cut -d: -f4 | tr , "\n"'
+  changed_when: false 
+  register: sudo_users
+
+- name: Ensure Docker group exists
+  group:
+    name: docker
+    state: present
+
+- name: Ensure Users are in Docker group
+  user:
+    name: '{{ item }}'
+    groups: docker
+    append: yes
+    state: present
+  with_items: '{{ sudo_users.stdout_lines }}'
+
+## Pruning unused docker images
+- name: Prune docker stuff
+  community.docker.docker_prune:
+    containers: yes
+    images: yes
+    networks: no
+    volumes: no
+    builder_cache: yes
+  when: docker_prune_images|default(False)|bool
