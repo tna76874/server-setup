@@ -49,18 +49,19 @@
 
 - name: Ensure repository
   block:
-    - name: Ensure Docker repository file
-      copy:
-        content: |
-          {{ docker_apt_repository }}
-        dest: "/etc/apt/sources.list.d/{{ docker_apt_filename }}.list"
-
     - name: Add Docker repository.
       apt_repository:
         repo: "{{ docker_apt_repository }}"
         state: present
         filename: "{{ docker_apt_filename }}"
         update_cache: true
+
+    - name: Ensure Docker repository file
+      copy:
+        content: |
+          {{ docker_apt_repository }}
+        dest: "/etc/apt/sources.list.d/{{ docker_apt_filename }}.list"
+        
   when: docker_add_repo | bool
 
 
