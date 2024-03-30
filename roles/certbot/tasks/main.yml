@@ -1,20 +1,40 @@
 ---
-- name: Add certbot apt repo
-  apt_repository:
-    repo: ppa:certbot/certbot
-    state: present
-  when: ansible_facts['lsb']['id'] == "Ubuntu" and ansible_facts['lsb']['major_release']| int == 18
+- name: Set certbot_apt fact
+  set_fact:
+    certbot_apt: "{{ ansible_facts['lsb']['id'] == 'Ubuntu' and ansible_facts['lsb']['major_release'] | int == 18 }}"
 
-- name: Install certbot
-  apt:
-    pkg:
-      - certbot
-      - python3-certbot-nginx
-    update_cache: true
-    state: present
+- name: Ensure certbot apt state
+  block:
+  - name: "Ensure certbot apt repo state: {{ 'present' if certbot_apt else 'absent' }} "
+    apt_repository:
+      repo: ppa:certbot/certbot
+      state: "{{ 'present' if certbot_apt else 'absent' }}"
 
-- name: Ensure Let's Encrypt uses API v2
-  lineinfile:
-    path: /etc/letsencrypt/cli.ini
-    regexp: '^server'
-    line: 'server = https://acme-v02.api.letsencrypt.org/directory'
+  - name: "Ensure certbot apt state: {{ 'present' if certbot_apt else 'absent' }}"
+    apt:
+      pkg:
+        - certbot
+        - python3-certbot-nginx
+      update_cache: true
+      state: "{{ 'present' if certbot_apt else 'absent' }}"
+
+- name: Ensure certbot snapd
+  block:
+    - name: Install snapd
+      apt:
+        name: snapd
+        state: present
+      become: yes
+
+    - name: Install Certbot via snap
+      community.general.snap:
+        name: certbot
+        classic: true
+
+    - name: Create symlink for Certbot command
+      file:
+        src: /snap/bin/certbot
+        dest: "{{ certbot_path }}"
+        state: link
+      become: yes
+  when: not certbot_apt
