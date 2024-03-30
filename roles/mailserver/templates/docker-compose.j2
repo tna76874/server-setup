@@ -1,4 +1,8 @@
 version: '3.8'
+networks:
+  {{ traefik_network if traefik_mailserver_enabled|default(False) else '${CONTAINER_NAME}_network' }}:
+      driver: bridge
+
 services:
   mail:
     image: ghcr.io/docker-mailserver/docker-mailserver:{{ mailserver_release }}
@@ -39,6 +43,8 @@ services:
 {% else %}
       - {{ traefik_letsencrypt_dir }}/acme.json:/etc/letsencrypt/acme.json:ro
 {% endif %}
+    networks:
+      - {{ traefik_network if traefik_mailserver_enabled|default(False) else '${CONTAINER_NAME}_network' }}
     restart: always
 {% if traefik_mailserver_proxy_enabled|default(False) %}
     labels:
@@ -80,7 +86,3 @@ services:
       - "traefik.http.routers.{{ docker_config_project|default('dockermailserver') }}.service={{ docker_config_project|default('dockermailserver') }}Service"
 
 {% endif %}
-
-networks:
-  default:
-    name: {{ traefik_network if traefik_mailserver_enabled|default(False) else '${CONTAINER_NAME}_network' }}
