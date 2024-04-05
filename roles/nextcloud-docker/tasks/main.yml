@@ -67,6 +67,21 @@
       nginx_version: "{{ (nginx_version_query.json['results'] | rejectattr('name', 'equalto', 'latest') | rejectattr('name', 'contains', 'alpine')| rejectattr('name', 'contains', '-') | selectattr('name', 'contains', '.') | list)[0]['name'] }}"
       tag_nginx: "{{ (nginx_version_query.json['results'] | rejectattr('name', 'equalto', 'latest') | rejectattr('name', 'contains', 'alpine')| rejectattr('name', 'contains', '-') | selectattr('name', 'contains', '.') | list)[0]['name'] }}"
     when: (tag_nginx|default(None) == None)
+  
+  ##LOCALAI
+  - name: Set localai release tag
+    block:
+      - name: Get latest localai release tag
+        community.general.github_release:
+          user: mudler
+          repo: LocalAI
+          action: latest_release
+        register: tag_localai_github
+
+      - name: Registering image tag
+        set_fact:
+          tag_localai: "{{ tag_localai_github.tag }}"
+    when: (tag_localai|default(None) == None)
   ####################################################################
 
   - name: Ensure directories-fpm-alpine

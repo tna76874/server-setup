@@ -13,6 +13,7 @@ tag_nextcloud: "{{ nextcloud_version }}-{{ nextcloud_installation_family }}"
 tag_redis: '7.0.4'
 tag_nginx: '1.23.1'
 tag_calbackup: 'latest'
+tag_localai: 
 
 ## redis enabled
 redis_enabled: False

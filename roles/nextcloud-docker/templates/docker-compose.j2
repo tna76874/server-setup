@@ -16,6 +16,22 @@ services:
     restart: always
 {% endif %}
 
+{% if localai_enabled|default(False)==True %}
+  api:
+    image: localai/localai:{{ tag_localai }}-aio-cpu
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/readyz"]
+      interval: 1m
+      timeout: 20m
+      retries: 5
+    expose:
+      - 8080
+    environment:
+      - DEBUG=true
+    volumes:
+      - /AICACHE/models/:/build/models:cached
+{% endif %}
+
 {% if (nextcloud_installation_family=='fpm-alpine') %}
   app:
     image: nextcloud:{{ tag_nextcloud }}
