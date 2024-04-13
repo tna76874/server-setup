@@ -263,7 +263,7 @@
       hour:   '01'
       user: root
       job: "{{ config_file_optimize }} > /dev/null 2>&1"
-      cron_file: nextcloud_optimize
+      cron_file: "{{ config_file_optimize_cronfile }}"
 
   - name: update apps nextcloud cronjob
     cron:
@@ -272,7 +272,7 @@
       hour:   '05'
       user: root
       job: "{{ docker_occ_cmd }} app:update --all > /dev/null 2>&1"
-      cron_file: nextcloud_optimize
+      cron_file: "{{ config_file_optimize_cronfile }}"
 
   - name: nextcloud cronjob
     cron:

@@ -53,6 +53,7 @@ docker_php_cmd: "{{ compose_base_cmd }} --user www-data app php -f cron.php"
 
 
 config_file_optimize: "/usr/local/bin/nextcloud_optimize{{ config_file_appendix }}.sh"
+config_file_optimize_cronfile: "nextcloud_optimize{{ config_file_appendix }}"
 config_file_occ : "/usr/local/bin/nextcloud_docker_occ{{ config_file_appendix }}"
 config_file_backup : "/usr/local/bin/nextcloud_backup{{ config_file_appendix }}"
 config_file_backup_cron : "nextcloud_backup{{ config_file_appendix }}"
