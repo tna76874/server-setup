@@ -8,7 +8,7 @@
   with_items:
     - { regexp: "^PasswordAuthentication", line: "PasswordAuthentication no" }
     - { regexp: "^PermitRootLogin", line: "PermitRootLogin prohibit-password" }
-    - { regexp: "^LoginGraceTime", line: "LoginGraceTime 0" }
+    # - { regexp: "^LoginGraceTime", line: "LoginGraceTime 0" }
 
 - import_tasks: firewall.yml
   when: config_ufw_firewall
