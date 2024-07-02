@@ -1,19 +1,14 @@
 ---
-- name: Disallow ssh password authentication
+- name: Ensure SSH configuration settings are present
   lineinfile:
     dest: "/etc/ssh/sshd_config"
-    regexp: "^PasswordAuthentication"
-    line: "PasswordAuthentication no"
+    regexp: "{{ item.regexp }}"
+    line: "{{ item.line }}"
     state: present
-  notify: restart sshd
-
-- name: Disallow root SSH access with passwords
-  lineinfile:
-    dest: "/etc/ssh/sshd_config"
-    regexp: "^PermitRootLogin"
-    line: "PermitRootLogin prohibit-password"
-    state: present
-  notify: restart sshd
+  with_items:
+    - { regexp: "^PasswordAuthentication", line: "PasswordAuthentication no" }
+    - { regexp: "^PermitRootLogin", line: "PermitRootLogin prohibit-password" }
+    - { regexp: "^LoginGraceTime", line: "LoginGraceTime 0" }
 
 - import_tasks: firewall.yml
   when: config_ufw_firewall
