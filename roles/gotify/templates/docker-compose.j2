@@ -1,12 +1,27 @@
 ---
-version: "3"
-
 services:
   gotify:
     image: gotify/server:{{ docker_release }}
     restart: always
+{% if traefik_enabled|default(False) %}
+    expose:
+      - 80
+    networks:
+      - {{ docker_config_project }}_local_network
+      - traefik_network
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.{{ docker_config_project }}.rule=Host(`{{ nginx_domain_name }}`)"
+      - "traefik.docker.network={{ traefik_network }}"
+      - "traefik.http.routers.{{ docker_config_project }}.entrypoints=websecure"
+      - "traefik.http.routers.{{ docker_config_project }}.tls=true"
+      - "traefik.http.routers.{{ docker_config_project }}.tls.certresolver=myresolver"
+      - "traefik.http.routers.{{ docker_config_project }}.service={{ docker_config_project }}Service"
+      - "traefik.http.services.{{ docker_config_project }}Service.loadbalancer.server.url=80"
+{% else %}
     ports:
-      - "127.0.0.1:{{ config_tcp }}:80"
+      - 127.0.0.1:{{ config_tcp }}:80
+{% endif %}
     environment:
 {% for envs in compose_config_env %}
       - {{ envs.var }}={{ envs.val }}
@@ -15,3 +30,11 @@ services:
 
     volumes:
       - "./data:/app/data"
+
+{% if traefik_enabled|default(False) %}
+networks:
+  {{ docker_config_project }}_local_network:
+  traefik_network:
+    external: True
+    name: {{ traefik_network }}
+{% endif %}

@@ -1,0 +1,44 @@
+---
+services:
+  traefik:
+    image: "traefik:v2.10"
+    container_name: "traefik"
+    command:
+      #- "--log.level=DEBUG"
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      - "--entrypoints.web.address=:80"
+      - "--entryPoints.web.forwardedHeaders.insecure"
+      - "--entrypoints.websecure.address=:443"
+      - "--entrypoints.web.http.redirections.entrypoint.to=websecure"
+      - "--entrypoints.web.http.redirections.entrypoint.scheme=https"
+      - "--certificatesresolvers.myresolver.acme.httpchallenge=true"
+      - "--certificatesresolvers.myresolver.acme.tlschallenge=true"
+      - "--certificatesresolvers.myresolver.acme.httpchallenge.entrypoint=web"
+      - "--certificatesresolvers.myresolver.acme.email={{ letsencrypt_email }}"
+      - "--certificatesresolvers.myresolver.acme.storage=/letsencrypt/acme.json"
+{% if traefik_mailserver_proxy_enabled|default(False) %}
+      - "--entryPoints.smtp.address=:25"
+      - "--entryPoints.smtp-ssl.address=:587"
+      - "--entryPoints.imap-ssl.address=:993"
+      - "--entryPoints.sieve.address=:4190"
+{% endif %}
+    ports:
+      - "443:443"
+      - "80:80"
+{% if traefik_mailserver_proxy_enabled|default(False) %}
+      - "25:25"
+      - "465:465"
+      - "587:587"
+      - "993:993"
+      - "4190:4190"
+{% endif %}
+    volumes:
+      - "./letsencrypt:/letsencrypt"
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"
+
+networks:
+  default:
+    name: {{ traefik_network }}
+    external: true
+

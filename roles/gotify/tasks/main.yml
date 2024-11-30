@@ -1,6 +1,6 @@
 ---
 - name: Check .env file
-  stat: 
+  stat:
     path: "{{ project_root }}/.env"
   register: env_file
   changed_when: not env_file.stat.exists
@@ -29,12 +29,12 @@
 #####################################################################
 
 - name: Check compose file
-  stat: 
+  stat:
     path: "{{ project_root }}/docker-compose.yml"
   register: compose_file
   changed_when: not compose_file.stat.exists
   notify:
-    - ensure compose down
+    - compose down
 
 - name: Flush handlers
   meta: flush_handlers
@@ -56,6 +56,7 @@
   loop:
     - { file: "nginx.j2", destination: "/etc/nginx/{{ nginx_domain_name }}.d/nginx.conf", owner: "root", mode: "0644" }
   become: yes
+  when: not traefik_enabled|default (False)
   notify:
     - reload nginx
 

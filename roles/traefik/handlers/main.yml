@@ -13,11 +13,6 @@
     - compose down
     - compose up
 
-- name: reload nginx
-  service:
-    name: nginx
-    state: reloaded
-
 - name: compose down
   docker_compose:
     project_src: "{{ project_root }}"

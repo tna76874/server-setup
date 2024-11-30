@@ -1,0 +1,25 @@
+---
+# docker release.
+tag_traefik: 
+# running user
+server_user: root
+# project root
+project_root: /srv/traefik
+# compose restart state
+restart_compose: false
+# docker-compose project name
+docker_config_project: traefik
+# start docker by default
+start_compose: true
+
+#network
+traefik_network: default_traefik_network
+
+# cmds
+compose_executable: "/usr/local/bin/docker-compose"
+compose_base_exec: "{{ compose_executable }} -f {{ project_root }}/docker-compose.yml exec -T"
+compose_base_bash: "{{ compose_executable }} -f {{ project_root }}/docker-compose.yml"
+
+## MAILSERVER
+traefik_mailserver_enabled: False
+traefik_mailserver_proxy_enabled: False
