@@ -1,6 +1,6 @@
 ---
 - name: Check .env file
-  stat: 
+  stat:
     path: "{{ project_root }}/.env"
   register: env_file
   changed_when: not env_file.stat.exists
@@ -12,7 +12,7 @@
 - name: Query kutt tags from github
   uri:
     url: https://api.github.com/repos/thedevs-network/kutt/tags
-    return_content: true                                             
+    return_content: true
   register: kutt_github_tags
   ignore_errors: yes
 
@@ -42,11 +42,12 @@
   loop:
     - { file: "nginx.j2", destination: "/etc/nginx/{{ nginx_domain_name }}.d/nginx.conf", owner: "root", mode: "0644" }
   become: yes
-  when: ( nginx_domain_name != None )
+  when: ( nginx_domain_name != None and not traefik_enabled|default (False))
   notify:
     - reload nginx
 
 - import_tasks: build.yml
+  when: build_kutt
 
 - name: init templates
   template:

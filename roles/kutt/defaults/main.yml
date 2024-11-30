@@ -10,6 +10,7 @@ build_repo: "https://github.com/thedevs-network/kutt.git"
 base_build_dir: "{{ project_root }}/build"
 base_build_dir_fonts: "{{ base_build_dir }}/static/fonts"
 base_build_font: "Nunito-VariableFont_wght.ttf"
+build_kutt: False
 
 # ensure docker-compose gets restarted on every run
 restart_compose: false
@@ -29,7 +30,7 @@ compose_executable: "/usr/local/bin/docker-compose"
 compose_base_cmd: "{{ compose_executable }} -f {{ project_root }}/docker-compose.yml exec -T"
 
 # public domain of the server
-nginx_domain_name: 
+nginx_domain_name:
 
 # Docker-compose configs
 compose_config_startup: always
@@ -58,12 +59,12 @@ kutt_config_contact_email: "{{ kutt_config_admin_emails[0] }}"
 kutt_config_site_name: 'Kutt'
 kutt_config_default_domain: "{{ nginx_domain_name }}"
 
-email_config_host: 
+email_config_host:
 email_config_port:
 email_config_secure: "'true'"
-email_config_user: 
+email_config_user:
 email_config_from:
-email_config_password: 
+email_config_password:
 
 compose_config_tcp_port: "2352"
 compose_config_env_kutt:
@@ -104,4 +105,3 @@ compose_config_env_postgres:
   - { var: "POSTGRES_PASSWORD", val: "{% raw %}${DB_PASSWORD}{% endraw %}" }
 
 
-  

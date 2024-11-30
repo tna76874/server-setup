@@ -1,15 +1,30 @@
-version: "3"
-
 services:
   kutt:
-    image: kuttcustom:{{ tag_kutt }}
+    image: {{'kuttcustom' if build_kutt else 'kutt/kutt'}}:{{ tag_kutt }}
     restart: {{ restart_policy }}
     depends_on:
       - postgres
       - redis
     command: ["./wait-for-it.sh", "postgres:5432", "--", "npm", "start"]
+{% if traefik_enabled|default(False) %}
+    expose:
+      - 3000
+    networks:
+      - {{ docker_config_project }}_local_network
+      - traefik_network
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.{{ docker_config_project }}.rule=Host(`{{ nginx_domain_name }}`)"
+      - "traefik.docker.network={{ traefik_network }}"
+      - "traefik.http.routers.{{ docker_config_project }}.entrypoints=websecure"
+      - "traefik.http.routers.{{ docker_config_project }}.tls=true"
+      - "traefik.http.routers.{{ docker_config_project }}.tls.certresolver=myresolver"
+      - "traefik.http.routers.{{ docker_config_project }}.service={{ docker_config_project }}Service"
+      - "traefik.http.services.{{ docker_config_project }}Service.loadbalancer.server.url=3000"
+{% else %}
     ports:
-      - "127.0.0.1:{{ compose_config_tcp_port }}:3000"
+      - 127.0.0.1:{{ compose_config_tcp_port }}:3000
+{% endif %}
     environment:
 {% for envs in compose_config_env_kutt %}
       {{ envs.var }}: {{ envs.val }}
@@ -30,3 +45,11 @@ services:
 {% endfor %}
     volumes:
       - ./data/postgres:/var/lib/postgresql/data
+
+{% if traefik_enabled|default(False) %}
+networks:
+  {{ docker_config_project }}_local_network:
+  traefik_network:
+    external: True
+    name: {{ traefik_network }}
+{% endif %}
