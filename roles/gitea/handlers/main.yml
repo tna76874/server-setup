@@ -15,7 +15,6 @@
     state: present
   notify:
     - ensure app gitea folder
-    - init templates
 
 - name: ensure app gitea folder
   file:

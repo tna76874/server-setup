@@ -1,6 +1,6 @@
 ---
 - name: Check .env file
-  stat: 
+  stat:
     path: "{{ project_root }}/.env"
   register: env_file
   changed_when: not env_file.stat.exists
@@ -8,7 +8,7 @@
     - ensure compose down
 
 - name: Check compose file
-  stat: 
+  stat:
     path: "{{ project_root }}/docker-compose.yml"
   register: compose_file
   changed_when: not compose_file.stat.exists
@@ -33,12 +33,13 @@
     state: directory
   loop:
     - { path: "{{ project_root }}", owner: "{{ server_user }}" }
+    - { path: "/app/gitea", owner: "root" }
 
 - name: Query releases from github
-  uri:                                                               
+  uri:
     url: https://api.github.com/repos/go-gitea/gitea/releases/latest
-    return_content: true                                             
-  register: github_latest_release   
+    return_content: true
+  register: github_latest_release
 
 - name: Registering release tag
   set_fact:
@@ -54,6 +55,7 @@
   loop:
     - { file: "nginx.j2", destination: "/etc/nginx/{{ nginx_domain_name }}.d/gitea.conf", owner: "root", mode: "0644" }
   become: yes
+  when: not traefik_enabled|default (False)
   notify:
     - reload nginx
 
