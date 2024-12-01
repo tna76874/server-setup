@@ -17,6 +17,11 @@ services:
       - "--certificatesresolvers.myresolver.acme.httpchallenge.entrypoint=web"
       - "--certificatesresolvers.myresolver.acme.email={{ letsencrypt_email }}"
       - "--certificatesresolvers.myresolver.acme.storage=/letsencrypt/acme.json"
+{% if traefik_dashboard_enabled|default(False) %}
+      - "--api.insecure=true"  # Aktiviert das Dashboard (nur für Entwicklungszwecke)
+      - "--api.dashboard=true"  # Aktiviert das Dashboard
+      - "--entrypoints.traefik.address=:8080"  # Port für das Dashboard
+{% endif %}
 {% if traefik_mailserver_proxy_enabled|default(False) %}
       - "--entryPoints.smtp.address=:25"
       - "--entryPoints.smtp-ssl.address=:587"
@@ -26,6 +31,9 @@ services:
     ports:
       - "443:443"
       - "80:80"
+{% if traefik_dashboard_enabled|default(False) %}
+      - "127.0.0.1:8080:8080"
+{% endif %}
 {% if traefik_mailserver_proxy_enabled|default(False) %}
       - "25:25"
       - "465:465"

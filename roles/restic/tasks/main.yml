@@ -1,18 +1,18 @@
 ---
 - name: Check if restic PW file exists
-  stat: 
+  stat:
     path: "{{ restic_password_file }}"
   register: restic_password
+
+- import_tasks: initiate.yml
+  when: restic_password.stat.exists == False
 
 - name: Perform if oidc_enabled
   block:
   - name: Check if restic backup directoy exists
-    stat: 
+    stat:
       path: "{{ restic_to_backup }}"
     register: CHECK_restic_to_backup
-
-  - import_tasks: initiate.yml
-    when: restic_password.stat.exists == False
 
   - name: Perform backup
     shell: "/snap/bin/restic backup {{ restic_to_backup }}"
