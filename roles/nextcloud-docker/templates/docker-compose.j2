@@ -1,8 +1,8 @@
-version: '3.3'
-
 services:
   db:
     image: mariadb:{{ tag_mariadb }}
+    networks:
+      - {{ docker_config_project }}_local_network
     restart: always
     command: --transaction-isolation=READ-COMMITTED --binlog-format=ROW
     volumes:
@@ -14,11 +14,15 @@ services:
   redis:
     image: redisbuildnc:{{ tag_redis }}
     restart: always
+    networks:
+      - {{ docker_config_project }}_local_network
 {% endif %}
 
 {% if localai_enabled|default(False)==True %}
   api:
     image: localai/localai:{{ tag_localai }}-aio-cpu
+    networks:
+      - {{ docker_config_project }}_local_network
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8080/readyz"]
       interval: 1m
@@ -36,6 +40,8 @@ services:
   app:
     image: nextcloud:{{ tag_nextcloud }}
     restart: always
+    networks:
+      - {{ docker_config_project }}_local_network
     depends_on:
       - db
 {% if redis_enabled|default(False) %}
@@ -64,8 +70,27 @@ services:
   web:
     image: nginx:{{ tag_nginx }}
     restart: always
+{% if traefik_enabled|default(False) %}
+    expose:
+      - 80
+    networks:
+      - {{ docker_config_project }}_local_network
+      - traefik_network
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.{{ docker_config_project }}.rule=Host(`{{ nginx_domain_name }}`)"
+      - "traefik.docker.network={{ traefik_network }}"
+      - "traefik.http.routers.{{ docker_config_project }}.entrypoints=websecure"
+      - "traefik.http.routers.{{ docker_config_project }}.tls=true"
+      - "traefik.http.routers.{{ docker_config_project }}.tls.certresolver=myresolver"
+      - "traefik.http.routers.{{ docker_config_project }}.service={{ docker_config_project }}Service"
+      - "traefik.http.services.{{ docker_config_project }}Service.loadbalancer.server.url=80"
+{% else %}
     ports:
       - 127.0.0.1:{{ compose_config_tcp_port }}:80
+    networks:
+      - {{ docker_config_project }}_local_network
+{% endif %}
     volumes:
       - ./data/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
       - ./data/nginx/uploadsize.conf:/etc/nginx/conf.d/uploadsize.conf:ro
@@ -82,8 +107,27 @@ services:
     depends_on:
       - db
       - redis
+{% if traefik_enabled|default(False) %}
+    expose:
+      - 80
+    networks:
+      - {{ docker_config_project }}_local_network
+      - traefik_network
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.{{ docker_config_project }}.rule=Host(`{{ nginx_domain_name }}`)"
+      - "traefik.docker.network={{ traefik_network }}"
+      - "traefik.http.routers.{{ docker_config_project }}.entrypoints=websecure"
+      - "traefik.http.routers.{{ docker_config_project }}.tls=true"
+      - "traefik.http.routers.{{ docker_config_project }}.tls.certresolver=myresolver"
+      - "traefik.http.routers.{{ docker_config_project }}.service={{ docker_config_project }}Service"
+      - "traefik.http.services.{{ docker_config_project }}Service.loadbalancer.server.url=80"
+{% else %}
     ports:
       - 127.0.0.1:{{ compose_config_tcp_port }}:80
+    networks:
+      - {{ docker_config_project }}_local_network
+{% endif %}
     volumes:
       - ./data/nextcloud:/var/www/html
       - ./data/nextcloud/data:/var/www/html/data
@@ -107,6 +151,8 @@ services:
 {% if enable_calbackup|bool %}
   nextcloud-nc-backup:
     image: waja/calcardbackup:{{ tag_calbackup }}
+    networks:
+      - {{ docker_config_project }}_local_network
     links:
       - db:nextcloud-db
 {% if (nextcloud_installation_family=='fpm-alpine') %}
@@ -136,9 +182,15 @@ services:
       - /etc/localtime:/etc/localtime:ro
       - /etc/timezone:/etc/timezone:ro
 {% endif %}
-{% if (nc_external_network!='') %}
 networks:
-  default:
-    name: {{ nc_external_network }}
+{% if (nc_external_network!='') %}
+  {{ nc_external_network }}:
     external: true
+{% endif %}
+  {{ docker_config_project }}_local_network:
+    driver: bridge
+{% if traefik_enabled|default(False) %}
+  traefik_network:
+    external: True
+    name: {{ traefik_network }}
 {% endif %}
