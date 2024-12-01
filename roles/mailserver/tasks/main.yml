@@ -1,12 +1,12 @@
 ---
 - name: Check .env file
-  stat: 
+  stat:
     path: "{{ project_root }}/.env"
   register: env_file
   changed_when: not env_file.stat.exists
 
 - name: Check compose file
-  stat: 
+  stat:
     path: "{{ project_root }}/docker-compose.yml"
   register: compose_file
   changed_when: not compose_file.stat.exists
@@ -19,10 +19,10 @@
     - dns init
 
 - name: Query releases from github
-  uri:                                                               
+  uri:
     url: https://api.github.com/repos/docker-mailserver/docker-mailserver/releases/latest
-    return_content: true                                             
-  register: github_latest_release   
+    return_content: true
+  register: github_latest_release
 
 - name: Registering release tag
   set_fact:
@@ -37,7 +37,7 @@
     group: "{{ item.owner }}"
     state: directory
   loop:
-    - { path: "{{ project_root }}", owner: "{{ mailserver_user }}" }    
+    - { path: "{{ project_root }}", owner: "{{ mailserver_user }}" }
 
 - name: Ensure source files from github
   get_url:
@@ -54,6 +54,10 @@
   notify:
     - ensure compose down
     - copy mailserver.env
+
+- name: Set domain_list with main domain and mail domains
+  set_fact:
+    domain_list: "{{ (['mail.' + main_domain_name] + mail_domains) | unique }}"
 
 - name: Ensure templates
   template:
@@ -85,7 +89,7 @@
 - name: Triggering handlers
   assert: { that: true, quiet: true }
   changed_when: true
-  notify: 
+  notify:
     - ensure configs
     - compose up
 

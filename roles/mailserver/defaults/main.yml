@@ -12,10 +12,14 @@ mailserver_user: root
 # mailserver configs
 config_fail2ban: 1
 config_log_trigger: daily_cron
-config_postmaster: 
+config_postmaster:
 config_message_limit: 102400000
 
 traefik_letsencrypt_dir: './letsencrypt'
+
+main_domain_name:
+
+mail_domains: []
 
 compose_ports:
   - { bind: "", host: "25", container: "25/tcp" }
