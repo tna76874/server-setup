@@ -326,6 +326,7 @@
 
 - name: Ensure theme
   include_tasks: theme.yml
+  when: configure_theme|bool|default(false)
 
 - name: Ensure OIDC state
   include_tasks: oidc.yml

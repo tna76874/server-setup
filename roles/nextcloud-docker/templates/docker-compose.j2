@@ -4,7 +4,7 @@ services:
     networks:
       - {{ docker_config_project }}_local_network
     restart: always
-    command: --transaction-isolation=READ-COMMITTED --binlog-format=ROW
+    command: --transaction-isolation=READ-COMMITTED --log-bin=binlog --binlog-format=ROW
     volumes:
       - ./data/db:/var/lib/mysql
     env_file:
@@ -106,7 +106,9 @@ services:
     restart: always
     depends_on:
       - db
+{% if redis_enabled|default(False) %}
       - redis
+{% endif %}
 {% if traefik_enabled|default(False) %}
     expose:
       - 80
@@ -130,9 +132,6 @@ services:
 {% endif %}
     volumes:
       - ./data/nextcloud:/var/www/html
-      - ./data/nextcloud/data:/var/www/html/data
-      - ./data/config/nextcloud.ini:/usr/local/etc/php/conf.d/nextcloud.ini
-      - ./data/config/www.conf:/usr/local/etc/php-fpm.d/www.conf
 {% for vol in compose_extra_volumes %}
       - {{ vol.host }}:{{ vol.container }}{{ vol.mode }}
 {% endfor %}
