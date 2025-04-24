@@ -99,3 +99,20 @@
   loop: "{{ mailserver_users }}"
   loop_control:
     loop_var: mailserver_user
+
+- name: Triggering handlers
+  assert: { that: true, quiet: true }
+  changed_when: true
+
+- name: ensure env configs configs
+  lineinfile:
+    path: "{{ mailserver_environment_file }}"
+    state: "{{ item.state | default('present') }}"
+    regexp: "^{{ item.key }}=(.*)"
+    line: "{{ item.key }}={{ item.value }}"
+  become: yes
+  loop: "{{ mailserver_env_configs }}"
+  notify:
+    - compose down
+    - compose up
+

@@ -9,7 +9,7 @@
 - name: copy mailserver.env
   copy:
     src: "{{ project_root }}/mailserver.env.example"
-    dest: "{{ project_root }}/mailserver.env"
+    dest: "{{ mailserver_environment_file }}"
     owner: "{{ mailserver_user }}"
     group: "{{ mailserver_user }}"
     mode: "0755"
@@ -19,7 +19,7 @@
 
 - name: ensure configs
   lineinfile:
-    path: "{{ project_root }}/mailserver.env"
+    path: "{{ mailserver_environment_file }}"
     state: "{{ item.state }}"
     regexp: "{{ item.regexp }}"
     line: "{{ item.line }}"

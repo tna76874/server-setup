@@ -7,6 +7,7 @@ restart_compose: false
 default_user: postmaster
 # setting deploy directory
 project_root: /srv/mailserver
+docker_config_project: mailserver
 # mailserver user
 mailserver_user: root
 # mailserver configs
@@ -55,3 +56,8 @@ mailserver_custom_config_files:
   postfix-master: "{{ project_root }}/config/postfix-master.cf"
   dovecot: "{{ project_root }}/config/dovecot.cf"
 
+mailserver_environment_file: "{{ project_root }}/mailserver.env"
+
+mailserver_env_configs: []
+  # - key: ENABLE_MANAGESIEVE
+  #   value: 1

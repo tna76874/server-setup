@@ -2,8 +2,6 @@ services:
   mail:
     image: ghcr.io/docker-mailserver/docker-mailserver:{{ mailserver_release }}
     hostname: ${HOSTNAME}.${DOMAINNAME}
-    networks:
-      - {{ docker_config_project }}_local_network
     domainname: ${DOMAINNAME}
     container_name: ${CONTAINER_NAME}
     env_file: mailserver.env
@@ -41,7 +39,7 @@ services:
       - {{ traefik_letsencrypt_dir }}/acme.json:/etc/letsencrypt/acme.json:ro
 {% endif %}
     networks:
-      - {{ traefik_network if traefik_mailserver_enabled|default(False) else '${CONTAINER_NAME}_network' }}
+      - {{ traefik_network if traefik_mailserver_enabled|default(False) else docker_config_project+'_network' }}
     restart: always
 {% if traefik_mailserver_proxy_enabled|default(False) %}
     labels:
@@ -72,19 +70,19 @@ services:
   whoami:
     image: docker.io/traefik/whoami:latest
     networks:
-      - {{ docker_config_project }}_local_network
+      - {{ docker_config_project|default('dockermailserver') }}_network
       - traefik_network
     container_name: {{ docker_config_project|default('dockermailserver') }}
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.{{ docker_config_project|default('dockermailserver') }}.rule=Host(`{{ domain_list|join("`,`") }}`)"
-      - "traefik.docker.network={{ traefik_network }}"
+      - "traefik.docker.network={{ traefik_network|default('defaulttraefiknetwork') }}"
       - "traefik.http.routers.{{ docker_config_project|default('dockermailserver') }}.entrypoints=websecure"
       - "traefik.http.routers.{{ docker_config_project|default('dockermailserver') }}.tls=true"
       - "traefik.http.routers.{{ docker_config_project|default('dockermailserver') }}.tls.certresolver=myresolver"
 {% endif %}
 networks:
-  {{ docker_config_project }}_local_network:
+  {{ docker_config_project }}_network:
   traefik_network:
     external: True
-    name: {{ traefik_network }}
+    name: {{ traefik_network|default('defaulttraefiknetwork') }}
