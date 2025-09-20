@@ -12,7 +12,7 @@
     cache_valid_time: 3600
     upgrade: safe
 
-- name: Restart SSH service
+- name: restart sshd
   service:
     name: "{{ 'ssh' if ansible_version.full | version_compare('24', '>=') else 'sshd' }}"
     state: restarted
