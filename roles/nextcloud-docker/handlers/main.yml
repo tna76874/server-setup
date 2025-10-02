@@ -25,15 +25,6 @@
   ignore_errors: yes
   become: yes
 
-- name: docker build redis
-  community.docker.docker_image:
-    name: "redisbuildnc:{{ tag_redis }}"
-    build:
-      path: "{{ project_root }}/build"
-      dockerfile: "Dockerfile_redis"
-    source: build
-  become: yes
-
 - name: compose up
   docker_compose:
     project_src: "{{ project_root }}"

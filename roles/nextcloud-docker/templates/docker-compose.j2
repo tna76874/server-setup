@@ -12,7 +12,7 @@ services:
 
 {% if redis_enabled|default(False) %}
   redis:
-    image: redisbuildnc:{{ tag_redis }}
+    image: redis:{{ tag_redis }}
     restart: always
     networks:
       - {{ docker_config_project }}_local_network
