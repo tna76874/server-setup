@@ -6,6 +6,23 @@
       - fail2ban
     state: present
 
+- name: Ensure custom ufw rules
+  copy:
+    content: |
+      [Web Traffic]
+      title=Web Traffic
+      description=Allow HTTP and HTTPS traffic
+      ports=80,443/tcp
+
+    mode: 0644
+    dest: /etc/ufw/applications.d/web-traffic
+
+- name: Allow Web Traffic in ufw
+  ufw:
+    rule: allow
+    name: Web Traffic
+    state: enabled
+
 - name: Allow ssh in ufw
   ufw:
     rule: limit
