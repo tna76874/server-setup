@@ -153,22 +153,6 @@
       - compose down
       - compose up
 
-  - name: init Dockerfile redis template
-    template:
-      src: "{{ item.file }}"
-      dest: "{{ item.destination }}"
-      owner: "{{ item.owner }}"
-      group: "{{ item.owner }}"
-      mode: "{{ item.mode }}"
-    become: yes
-    loop:
-      - { file: "Dockerfile_redis.j2", destination: "{{ project_root }}/build/Dockerfile_redis", owner: "{{ server_user }}", mode: "0755" }
-    notify:
-      - compose down
-      - docker build redis
-      - compose up
-    when: redis_enabled|default(False)
-
   - name: Compose startup state
     assert: { that: true, quiet: true }
     changed_when: true
