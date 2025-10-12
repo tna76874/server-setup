@@ -1,0 +1,44 @@
+---
+- name: Ensure git build repo
+  block:
+  - name: Ensure build git repo
+    ansible.builtin.git:
+      repo: "{{ build_repo }}"
+      dest: "{{ base_build_dir }}"
+      clone: yes
+      update: yes
+      force: yes
+      version: "{{ tag_kutt }}"
+      refspec: '+refs/tags/*:refs/tags/*'
+    changed_when: False
+
+  rescue:
+  - name: Delete git repo
+    file:
+      state: absent
+      dest: "{{ base_build_dir }}"
+
+  - name: Ensure build git repo
+    ansible.builtin.git:
+      repo: "{{ build_repo }}"
+      dest: "{{ base_build_dir }}"
+      clone: yes
+      update: yes
+      force: yes
+      version: "{{ tag_kutt }}"
+      refspec: '+refs/tags/*:refs/tags/*'
+    changed_when: False
+
+- name: docker build base
+  docker_image:
+    name: "kuttcustom:{{ tag_kutt }}"
+    build:
+      path: "{{ base_build_dir }}"
+      dockerfile: "{{ base_build_dir }}/Dockerfile"
+      nocache: yes
+      pull: yes
+    source: build
+  become: yes
+  notify:
+    - compose down
+    - compose up

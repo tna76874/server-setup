@@ -1,0 +1,69 @@
+services:
+  postgres:
+    image: postgres:14-alpine3.20
+    container_name: postgres
+    restart: {{ compose_config_startup }}
+    volumes:
+      - ./data/postgres/14/database_data:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=${POSTGRES_PW}
+    networks:
+      - {{ docker_config_project }}_local_network
+{% if mount_postgres_port | default(false) %}
+    ports:
+      - "127.0.0.1:5432:5432"
+{% endif %}
+
+  redis:
+    image: redis:6.2-alpine3.20
+    container_name: redis
+    restart: {{ compose_config_startup }}
+    volumes:
+      - ./data/redis/database_data:/data
+    networks:
+      - {{ docker_config_project }}_local_network
+
+  greenlight-v3:
+    entrypoint: [bin/start]
+    image: bigbluebutton/greenlight:v{{ tag_greenlight }}
+    container_name: greenlight-v3
+    restart: {{ compose_config_startup }}
+    env_file: .env
+    expose:
+      - 3000
+    logging:
+      driver: journald
+    volumes:
+      - ./data/greenlight-v3/storage:/usr/src/app/storage
+      - ./data/locales/de.json:/usr/src/app/app/assets/locales/de.json
+{% for mount in compose_extra_mountpoints %}
+      - {{ mount.local }}:{{ mount.container }}{% if mount.permission is defined %}:{{ mount.permission }}{% endif %}
+{% endfor %}
+
+    depends_on:
+      - postgres
+      - redis
+
+    dns:
+      - 8.8.8.8
+
+    networks:
+      - {{ docker_config_project }}_local_network
+      - traefik_network
+
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.{{ docker_config_project }}.rule=Host(`{{ service_domain }}`)"
+      - "traefik.docker.network={{ traefik_global_variables.default_network }}"
+      - "traefik.http.routers.{{ docker_config_project }}.entrypoints={{ traefik_global_variables.websecure }}"
+      - "traefik.http.routers.{{ docker_config_project }}.tls=true"
+      - "traefik.http.routers.{{ docker_config_project }}.tls.certresolver={{ traefik_global_variables.certresolver }}"
+      - "traefik.http.routers.{{ docker_config_project }}.service={{ docker_config_project }}Service"
+      - "traefik.http.services.{{ docker_config_project }}Service.loadbalancer.server.url=3000"
+
+networks:
+  {{ docker_config_project }}_local_network:
+  traefik_network:
+    external: True
+    name: {{ traefik_global_variables.default_network }}

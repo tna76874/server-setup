@@ -1,0 +1,36 @@
+services:
+  kutt:
+    image: {{'kuttcustom' if build_kutt else 'kutt/kutt'}}:{{ tag_kutt }}
+    restart: {{ restart_policy }}
+    expose:
+      - 3000
+
+    environment:
+      DB_FILENAME: "/var/lib/kutt/data.sqlite"
+{% for envs in compose_config_env_kutt %}
+      {{ envs.var }}: "{{ envs.val }}"
+{% endfor %}
+
+    volumes:
+      - ./data/db_data_sqlite:/var/lib/kutt
+      - ./data/custom:/kutt/custom
+
+    networks:
+      - {{ docker_config_project }}_local_network
+      - traefik_network
+
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.{{ docker_config_project }}.rule=Host(`{{ service_domain }}`)"
+      - "traefik.docker.network={{ traefik_global_variables.default_network }}"
+      - "traefik.http.routers.{{ docker_config_project }}.entrypoints={{ traefik_global_variables.websecure }}"
+      - "traefik.http.routers.{{ docker_config_project }}.tls=true"
+      - "traefik.http.routers.{{ docker_config_project }}.tls.certresolver={{ traefik_global_variables.certresolver }}"
+      - "traefik.http.routers.{{ docker_config_project }}.service={{ docker_config_project }}Service"
+      - "traefik.http.services.{{ docker_config_project }}Service.loadbalancer.server.url=3000"
+
+networks:
+  {{ docker_config_project }}_local_network:
+  traefik_network:
+    external: True
+    name: {{ traefik_global_variables.default_network }}

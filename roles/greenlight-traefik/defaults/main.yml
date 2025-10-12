@@ -1,0 +1,39 @@
+---
+# docker image tags
+### If tag_greenlight will be left EMPTY, the latest release will be curled from docker hub and used.
+tag_greenlight: '3.6.3'
+
+# ensure docker-compose gets restarted on every run
+restart_compose: false
+restart_policy: 'always'
+# docker-compose project name
+docker_config_project: greenlight
+# start docker by default
+start_compose: true
+# running user
+server_user: root
+# project root
+project_root: "/srv/{{ docker_config_project }}"
+
+compose_executable: "/usr/local/bin/docker-compose"
+compose_base_cmd: "{{ compose_executable }} -f {{ project_root }}/docker-compose.yml exec -T"
+
+# public domain of the server
+service_domain:
+
+# Docker-compose configs
+compose_config_startup: always
+compose_config_postgres_pw: "{{ lookup('password', '/dev/null length=64 chars=ascii_letters,digits') }}"
+rails_secret: "{{ lookup('password', '/dev/null length=128 chars=0123456789abcdef') }}"
+
+compose_extra_mountpoints: []
+  # - local: ...
+  #   container: ...
+
+mount_postgres_port: true
+
+traefik_global_variables:
+  default_network: traefik_default_network
+  certresolver: default
+  websecure: web-secure
+  web: web

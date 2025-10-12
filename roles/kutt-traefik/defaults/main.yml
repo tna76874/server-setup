@@ -1,0 +1,65 @@
+---
+# docker image tags
+### If tag_kutt will be left EMPTY, the latest release will be curled from docker hub and used.
+tag_kutt: 'v3.2.3'
+
+# build repo
+build_repo: "https://github.com/thedevs-network/kutt.git"
+base_build_dir: "{{ project_root }}/build"
+build_kutt: False
+
+# ensure docker-compose gets restarted on every run
+restart_compose: false
+restart_policy: 'always'
+# docker-compose project name
+docker_config_project: kutt
+# start docker by default
+start_compose: true
+# running user
+server_user: root
+# project root
+project_root: "/srv/{{ docker_config_project }}"
+config_redis_dir: "/srv/{{ docker_config_project }}/data/redis"
+config_postgres_dir: "/srv/{{ docker_config_project }/data/postgres"
+
+compose_executable: "/usr/local/bin/docker-compose"
+compose_base_cmd: "{{ compose_executable }} -f {{ project_root }}/docker-compose.yml exec -T"
+
+# public domain of the server
+service_domain:
+
+# Docker-compose configs
+compose_config_startup: always
+compose_config_postgres_pw: "{{ lookup('password', '/dev/null length=32 chars=ascii_letters,digits') }}"
+compose_config_jwt_pw: "{{ lookup('password', '/dev/null length=32 chars=ascii_letters,digits') }}"
+
+compose_config_env_kutt:
+  # Config
+  - { var: "SITE_NAME", val: "{{ kutt_config_site_name | default('Your Site') | string }}" }
+  - { var: "DEFAULT_DOMAIN", val: "{{ kutt_config_default_domain | default('localhost:3000') }}" }
+  - { var: "PORT", val: "{{ kutt_config_port | default('3000') }}" }
+  - { var: "LINK_LENGTH", val: "{{ kutt_config_link_length | default(6) }}" }
+  - { var: "DISALLOW_REGISTRATION", val: "{{ kutt_config_disallow_reg | default('true') | string }}" }
+  - { var: "DISALLOW_ANONYMOUS_LINKS", val: "{{ kutt_config_disable_anon | default('true') | string }}" }
+  - { var: "USER_LIMIT_PER_DAY", val: "{{ kutt_config_daily_limit | default(100) }}" }
+  - { var: "NON_USER_COOLDOWN", val: "{{ kutt_config_cooldown_min | default(10) }}" }
+  - { var: "DEFAULT_MAX_STATS_PER_LINK", val: "{{ kutt_config_max_stats | default(1000) }}" }
+  - { var: "CUSTOM_DOMAIN_USE_HTTPS", val: "{{ kutt_config_domain_ssl | default('false') | string }}" }
+  - { var: "JWT_SECRET", val: "{% raw %}${JWT_SECRET}{% endraw %}" }
+  - { var: "ADMIN_EMAILS", val: "{{ kutt_config_admin_email | default('admin@example.com') }}" }
+  - { var: "REPORT_EMAIL", val: "{{ kutt_config_report_email | default(kutt_config_admin_email) }}" }
+  - { var: "CONTACT_EMAIL", val: "{{ kutt_config_contact_email | default(kutt_config_admin_email) }}" }
+#  # Email
+#  - { var: "MAIL_HOST", val: "{{ email_config_host | default('smtp.example.com') }}" }
+#  - { var: "MAIL_PORT", val: "{{ email_config_port | default(587) }}" }
+#  - { var: "MAIL_SECURE", val: "{{ email_config_secure | default('false') }}" }
+#  - { var: "MAIL_USER", val: "{{ email_config_user | default('user@example.com') }}" }
+#  - { var: "MAIL_FROM", val: "{{ email_config_from | default('no-reply@example.com') }}" }
+#  - { var: "MAIL_PASSWORD", val: "{{ email_config_password | default('your_email_password') }}" }
+
+
+traefik_global_variables:
+  default_network: traefik_default_network
+  certresolver: default
+  websecure: web-secure
+  web: web
