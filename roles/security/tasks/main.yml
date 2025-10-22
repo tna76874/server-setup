@@ -8,7 +8,7 @@
   with_items:
     - { regexp: "^PasswordAuthentication", line: "PasswordAuthentication no" }
     - { regexp: "^PermitRootLogin", line: "PermitRootLogin prohibit-password" }
-    - { regexp: "^LoginGraceTime", line: "LoginGraceTime 0" }
+    - { regexp: "^LoginGraceTime", line: "LoginGraceTime {{ sshd_grace_time }}" }
   notify: restart sshd
 
 - import_tasks: firewall.yml
