@@ -10,6 +10,7 @@
   pip:
     name: '{{ item }}'
     executable: pip3
+    extra_args: --break-system-packages
     state: present
   loop: "{{ luks_pip_packages }}"
 
@@ -23,15 +24,24 @@
     path: "{{ luks_mount_path }}"
   register: luks_mount_path_status
 
+- name: Set expect response regex based on Python version
+  set_fact:
+    luks_passphrase_regex: >-
+      {% if ansible_facts.python.version.major == 3 and ansible_facts.python.version.minor >= 12 %}
+      (?i).*passphrase.*
+      {% else %}
+      .*(?i)passphrase.*
+      {% endif %}
+
 - name: Open LUKS device
-  expect:
+  ansible.builtin.expect:
     command: "cryptsetup luksOpen {{ luks_container }} {{ luks_mapper_device }}"
     responses:
-      '.*(?i)passphrase.*': "{{ luks_password }}"
+      '{{ luks_passphrase_regex }}': "{{ luks_password }}"
   become: yes
   when:
-    - 'not luks_mapper_device_status.stat.exists'
-    - 'luks_mount_state|bool'
+    - not luks_mapper_device_status.stat.exists
+    - luks_mount_state | bool
 
 - name: Triggering shutdown compose services
   assert: { that: true, quiet: true }
