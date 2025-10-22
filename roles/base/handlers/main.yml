@@ -14,7 +14,7 @@
 
 - name: restart sshd
   service:
-    name: "{{ 'ssh' if ansible_version.full | version_compare('24', '>=') else 'sshd' }}"
+    name: "{{ 'ssh' if ansible_facts['distribution_version'] is version('24', '>=') else 'sshd' }}"
     state: restarted
 
 - name: restart ufw
