@@ -9,6 +9,13 @@
   ansible.builtin.package_facts:
     manager: auto
 
+- name: Ensure packages are installed
+  apt:
+    name: "{{ item }}"
+    state: present
+  loop:
+    - util-linux-extra
+
 - name: Ensure wrong hostname is not in hosts file
   lineinfile:
     dest: /etc/hosts
