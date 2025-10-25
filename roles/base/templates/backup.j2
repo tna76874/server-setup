@@ -117,7 +117,7 @@ notify_success() {
 notify_error() {
     if isfile "/usr/local/bin/gotify" ; then
         /usr/local/bin/gotify "Restic job $@ on ${CON_HOST} failed" "ERROR" "8" || return 0
-    fi 
+    fi
 }
 
 restic_try() {
@@ -141,12 +141,11 @@ RESTIC_ARGS="$@"
 init_env
 mkdir -p $(dirname "$LOGFILE")
 
+set -o pipefail
 {
-
 echo $(date)
 "$RESTIC_EXE" unlock --cleanup-cache
-restic_try "$RESTIC_ARGS" && notify_success "$RESTIC_ARGS" || notify_error "$RESTIC_ARGS"
-
+restic_try "$RESTIC_ARGS" && { notify_success "$RESTIC_ARGS"; exit 0; } || { notify_error "$RESTIC_ARGS"; exit 1; }
 } 2>&1 | tee -a $LOGFILE
 }
 
@@ -189,5 +188,5 @@ done
 shift $((OPTIND-1))
 
 if [[ ! -z "$@" ]]; then
-    restic_run "$@" 
+    restic_run "$@"
 fi
