@@ -14,7 +14,7 @@
     - compose up
 
 - name: ensure compose down
-  docker_compose:
+  community.docker.docker_compose_v2:
     project_src: "{{ project_root }}"
     state: absent
   become: true
@@ -27,7 +27,7 @@
     state: reloaded
 
 - name: compose down
-  docker_compose:
+  community.docker.docker_compose_v2:
     project_src: "{{ project_root }}"
     state: absent
   become: true
@@ -38,10 +38,10 @@
   when: not compose_tls_on_local_server|bool
 
 - name: compose up
-  docker_compose:
+  community.docker.docker_compose_v2:
     project_src: "{{ project_root }}"
     state: present
-    pull: yes
+    pull: missing
   become: true
   notify:
     - wait for

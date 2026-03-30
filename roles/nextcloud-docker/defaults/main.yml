@@ -172,7 +172,7 @@ nextcloud_system_config:
   - "auth.bruteforce.protection.enabled --value=true --type=boolean"
   - "trashbin_retention_obligation --value='auto,7'"
   - "skeletondirectory --value=''"
-  - "defaultapp --value='file'"
+  - "defaultapp --value='files'"
   - "activity_expire_days --value='14'  --type=integer"
   - "integrity.check.disabled --value=false --type=boolean"
   - "updater.release.channel --value=stable"
