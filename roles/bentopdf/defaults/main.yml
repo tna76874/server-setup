@@ -1,0 +1,45 @@
+---
+# docker image tags
+### If tag will be left EMPTY, the latest release will be curled from docker hub and used.
+tag_bentopdf: 'latest'
+
+
+# ensure docker-compose gets restarted on every run
+restart_compose: true
+restart_policy: 'always'
+# docker-compose project name
+docker_config_project: bentopdf
+# start docker by default
+start_compose: true
+# running user
+server_user: root
+# project root
+project_root: "/srv/{{ docker_config_project }}"
+
+compose_executable: "/usr/local/bin/docker-compose"
+compose_base_cmd_exec: "{{ compose_executable }} -f {{ project_root }}/docker-compose.yml exec -T"
+compose_base_cmd: "{{ compose_executable }} -f {{ project_root }}/docker-compose.yml"
+
+bentopdf_defaults:
+  PUID: "1000"
+  PGID: "1000"
+  VITE_WASM_PYMUPDF_URL: "https://cdn.jsdelivr.net/npm/@bentopdf/pymupdf-wasm@0.11.16/"
+  VITE_WASM_GS_URL: "https://cdn.jsdelivr.net/npm/@bentopdf/gs-wasm/assets/"
+  VITE_WASM_CPDF_URL: "https://cdn.jsdelivr.net/npm/coherentpdf/dist/"
+  VITE_DEFAULT_LANGUAGE: "de"
+
+# public domain of the server
+service_domain: 
+nginx_domain_name: 
+traefik_enabled: false
+
+compose_config_tcp_port: "1293"
+
+
+# Docker-compose configs
+compose_config_startup: always
+compose_config_secret: "{{ lookup('password', '/dev/null length=32 chars=ascii_letters,digits') }}"
+
+watchtower_enabled: True
+watchtower_interval: 259200 # 3 days = 60*60*24*3 seconds
+bentopdf_simple: True

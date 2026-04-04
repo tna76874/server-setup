@@ -1,0 +1,67 @@
+services:
+  bentopdf:
+    image: ghcr.io/alam00000/bentopdf{% if bentopdf_simple %}-simple{% endif %}{% if not watchtower_enabled or (tag_bentopdf == 'latest' or tag_bentopdf == 'edge') %}:{{ tag_bentopdf | default('latest') }}{% endif %}
+    
+    container_name: bentopdf
+    restart: {{ restart_policy }}
+
+    environment:
+{% for key, value in bentopdf_final_env.items() %}
+      - {{ key }}="{{ value }}"
+{% endfor %}
+
+    networks:
+      - {{ docker_config_project }}_local_network
+{% if traefik_enabled %}
+      - traefik_network
+
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.{{ docker_config_project }}.rule=Host(`{{ service_domain }}`)"
+      - "traefik.docker.network={{ traefik_global_variables.default_network }}"
+      - "traefik.http.routers.{{ docker_config_project }}.entrypoints={{ traefik_global_variables.websecure }}"
+      - "traefik.http.routers.{{ docker_config_project }}.tls=true"
+      - "traefik.http.routers.{{ docker_config_project }}.tls.certresolver={{ traefik_global_variables.certresolver }}"
+      - "traefik.http.routers.{{ docker_config_project }}.service={{ docker_config_project }}Service"
+      - "traefik.http.services.{{ docker_config_project }}Service.loadbalancer.server.url=8080"
+      - "traefik.http.routers.bentopdf.middlewares=bentopdf-headers"
+      - "traefik.http.middlewares.bentopdf-headers.headers.customresponseheaders.Cross-Origin-Opener-Policy=same-origin"
+      - "traefik.http.middlewares.bentopdf-headers.headers.customresponseheaders.Cross-Origin-Embedder-Policy=require-corp"
+{% if watchtower_enabled %}
+      - "com.centurylinklabs.watchtower.scope=bentopdf"
+{% endif %}
+
+{% else %}
+{% if watchtower_enabled %}
+    labels:
+      - "com.centurylinklabs.watchtower.scope=bentopdf"
+{% endif %}
+    ports:
+      - 127.0.0.1:{{ compose_config_tcp_port }}:8080
+
+{% endif %}
+
+
+{% if watchtower_enabled %}
+  watchtower_bentopdf:
+    image: containrrr/watchtower
+    container_name: watchtower_bentopdf
+    restart: always
+
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+
+    command: --interval {{ watchtower_interval }} --scope bentopdf
+
+    labels:
+      - "com.centurylinklabs.watchtower.scope=bentopdf"
+{% endif %}
+
+networks:
+  {{ docker_config_project }}_local_network:
+{% if traefik_enabled %}
+  traefik_network:
+    external: True
+    name: {{ traefik_global_variables.default_network }}
+{% endif %}
+
