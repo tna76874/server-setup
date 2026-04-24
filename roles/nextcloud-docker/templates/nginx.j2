@@ -9,4 +9,6 @@ location / {
     proxy_set_header X-Forwarded-Proto http;
     proxy_set_header X-Nginx-Proxy true;
     proxy_redirect off;
+
+    add_header Strict-Transport-Security "max-age=15552000; includeSubDomains" always;
 }
