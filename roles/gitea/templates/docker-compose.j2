@@ -11,8 +11,6 @@ services:
       - GITEA__database__DB_PASSWD=${DB_PASSWD}
       - SSH_DOMAIN=${SSH_DOMAIN}
     restart: always
-    networks:
-      - gitea
     volumes:
       - /var/lib/gitea:/data
       - /etc/timezone:/etc/timezone:ro
@@ -39,17 +37,18 @@ services:
     ports:
        - "127.0.0.1:${TCPPORT}:3000"
        - "127.0.0.1:${SSHPORT}:22"
-    networks:
-      - {{ docker_config_project }}_local_network
 {% endif %}
     depends_on:
       - db
   db:
     image: mysql:5.7
     restart: always
+    
+{% if traefik_enabled|default(False) %}
     networks:
       - {{ docker_config_project }}_local_network
-      - gitea
+{% endif %}
+
     environment:
       - MYSQL_ROOT_PASSWORD=${DB_PASSWD}
       - MYSQL_USER=gitea
