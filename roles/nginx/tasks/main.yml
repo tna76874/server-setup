@@ -1,4 +1,42 @@
 ---
-- import_tasks: nginx.yml
+- name: Ensure nginx installed
+  ansible.builtin.apt:
+    name: nginx
+    state: present
+    update_cache: true
+    cache_valid_time: 3600
 
-- import_tasks: letsencrypt.yml
+- name: Ensure nginx ufw configuration is available
+  ansible.builtin.copy:
+    # Standard profiles, not shipped by nginx on every distribution
+    content: |
+      [Nginx HTTP]
+      title=Web Server (Nginx, HTTP)
+      description=Small, but very powerful and efficient web server
+      ports=80/tcp
+
+      [Nginx HTTPS]
+      title=Web Server (Nginx, HTTPS)
+      description=Small, but very powerful and efficient web server
+      ports=443/tcp
+
+      [Nginx Full]
+      title=Web Server (Nginx, HTTP + HTTPS)
+      description=Small, but very powerful and efficient web server
+      ports=80,443/tcp
+    mode: '0644'
+    dest: /etc/ufw/applications.d/nginx
+
+- name: Allow nginx in ufw
+  community.general.ufw:
+    rule: allow
+    name: Nginx Full
+
+- name: Ensure nginx configuration contains log format with request id
+  ansible.builtin.lineinfile:
+    path: /etc/nginx/nginx.conf
+    regexp: '^\s*log_format\s+cri\s'
+    line: "log_format cri '$remote_addr - $remote_user [$time_local] \"$request\" $status $body_bytes_sent \"$http_referer\" \"$http_user_agent\" request_id=$request_id';"
+    insertbefore: '^\s*access_log'
+    # validate: '/usr/sbin/nginx -t -c %s'
+  notify: Reload nginx
