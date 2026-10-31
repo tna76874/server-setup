@@ -1,40 +1,30 @@
 ---
-- name: Set certbot_apt fact
-  set_fact:
-    certbot_apt: "{{ ansible_facts['lsb']['id'] == 'Ubuntu' and ansible_facts['lsb']['major_release'] | int == 18 }}"
+- name: Remove apt-based certbot (conflicts with snap version)
+  ansible.builtin.apt:
+    name:
+      - certbot
+      - python3-certbot-nginx
+    state: absent
+    purge: true
+  become: true
 
-- name: Ensure certbot apt state
-  block:
-  - name: "Ensure certbot apt repo state: {{ 'present' if certbot_apt else 'absent' }} "
-    apt_repository:
-      repo: ppa:certbot/certbot
-      state: "{{ 'present' if certbot_apt else 'absent' }}"
-
-  - name: "Ensure certbot apt state: {{ 'present' if certbot_apt else 'absent' }}"
-    apt:
-      pkg:
-        - certbot
-        - python3-certbot-nginx
-      update_cache: true
-      state: "{{ 'present' if certbot_apt else 'absent' }}"
-
-- name: Ensure certbot snapd
+- name: Install certbot via snap
+  become: true
   block:
     - name: Install snapd
-      apt:
+      ansible.builtin.apt:
         name: snapd
         state: present
-      become: yes
+        update_cache: true
+        cache_valid_time: 3600
 
-    - name: Install Certbot via snap
+    - name: Install certbot snap
       community.general.snap:
         name: certbot
         classic: true
 
-    - name: Create symlink for Certbot command
-      file:
+    - name: Create symlink for certbot command
+      ansible.builtin.file:
         src: /snap/bin/certbot
         dest: "{{ certbot_path }}"
         state: link
-      become: yes
-  when: not certbot_apt
